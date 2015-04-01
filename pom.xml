@@ -10,6 +10,7 @@
     <packaging>jar</packaging>
     <name>daas-token</name>
     <url>http://clouthink.in</url>
+    <description>The light-weight token security framework (Based on Spring) </description>
 
     <licenses>
         <license>
@@ -24,6 +25,12 @@
             <email>clouthink.in@gmail.com</email>
         </developer>
     </developers>
+
+    <scm>
+        <connection>scm:git://git.coding.net/melthaw/Daas-Token.git</connection>
+        <developerConnection>scm:git://git.coding.net/melthaw/Daas-Token.git</developerConnection>
+        <url>git://git.coding.net/melthaw/Daas-Token.git</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
