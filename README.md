@@ -295,3 +295,38 @@ add `@Primary` annotation to the compositeTokenProvider.
 Daas-Token is one light-weighted security framework but it doesn't mean we will sacrifice the performance to exchange the simple usage.
 The SPI is available for the advanced user to adapt their own implementation, even we have supported the Memcached, Redis and Mongodb out of the box.
 
+Just supply your implementation
+
+    public interface TokenProvider<T extends Token> {
+        
+        public void saveToken(T token);
+        
+        public T findByToken(String token);
+        
+        public void revokeToken(T token);
+        
+    }
+
+### Customize the authorization
+
+Maybe you'd like to save the access control list back to the data store , and want to authorize the access request based on the dynamic data not hard-coded configuration.
+The SPI supplies the extension point if you want customize the authorization behaviors.
+
+    public interface AclProvider<T extends Acl> {
+        
+        public List<T> listAll();
+        
+    }
+
+
+    public interface AccessRequestVoter<T extends AccessRequest> {
+        
+        public AccessResponse vote(T t, String grantRule);
+        
+    }
+    
+Please refer to the default implementations by DaaS-Token
+    
+* in.clouthink.daas.security.token.spi.impl.DefaultUrlAclProvider
+* in.clouthink.daas.security.token.core.acl.AccessRequestRoleVoter
+* in.clouthink.daas.security.token.core.acl.AccessRequestUserVoter
