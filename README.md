@@ -334,4 +334,34 @@ Please refer to the default implementations by DaaS-Token
 
 ### Java Client
 
+Once the user passed the authentication , the token response is sent back to the user. 
+And then you can access the protected url resource with the token in the http header.
 
+    MultiValueMap<String, String> bodyMap = new LinkedMultiValueMap<String, String>();
+    bodyMap.add("username", "your username");
+    bodyMap.add("password", "your password");
+    
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    
+    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(bodyMap,
+                                                                                                      headers);
+    
+    Map result = new RestTemplate().postForObject("http://127.0.0.1/login",
+                                                  request,
+                                                  Map.class);
+                                                  
+    String token = (String) ((Map) result.get("data")).get("token");                            
+                              
+    HttpHeaders headers = new HttpHeaders();
+    String bearer = new String(Base64.encode(token.getBytes("UTF-8")),
+                               "UTF-8");
+    headers.set("Authorization", "Bearer " + bearer);
+    
+    HttpEntity request = new HttpEntity(headers);
+    
+    ResponseEntity<String> result = new RestTemplate().exchange("http://127.0.0.1/token/sample",
+                                                                HttpMethod.GET,
+                                                                request,
+                                                                String.class);   
+                                                                  
