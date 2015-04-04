@@ -70,16 +70,16 @@ public class UrlAclBuilder {
     public UrlAcl build() {
         // TODO add validation
         if (UrlAclType.ANTPATH == type) {
-            return new RegexUrlAcl(this.urlRealm,
-                                   this.httpMethods,
-                                   this.caseSensitive,
-                                   this.grantRules);
-        }
-        else if (UrlAclType.REGEX == type) {
             return new AntPathUrlAcl(this.urlRealm,
                                      this.httpMethods,
                                      this.caseSensitive,
                                      this.grantRules);
+        }
+        else if (UrlAclType.REGEX == type) {
+            return new RegexUrlAcl(this.urlRealm,
+                                   this.httpMethods,
+                                   this.caseSensitive,
+                                   this.grantRules);
         }
         return null;
     }
