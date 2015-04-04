@@ -3,6 +3,7 @@ package in.clouthink.daas.security.token.spi.impl.model;
 import java.util.Date;
 import java.util.UUID;
 
+import in.clouthink.daas.security.token.spi.KeyGeneratorFactory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -16,7 +17,7 @@ public class TokenEntity implements Token {
     
     public static TokenEntity create(User owner) {
         TokenEntity result = new TokenEntity();
-        String value = UUID.randomUUID().toString().replace("-", "");
+        String value = KeyGeneratorFactory.getInstance().generateId();
         result.setToken(value);
         result.setOwner(owner);
         Date date = new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000);
@@ -27,7 +28,7 @@ public class TokenEntity implements Token {
     
     public static TokenEntity create(User owner, long timeout) {
         TokenEntity result = new TokenEntity();
-        String value = UUID.randomUUID().toString().replace("-", "");
+        String value = KeyGeneratorFactory.getInstance().generateId();
         result.setToken(value);
         result.setOwner(owner);
         Date date = new Date(System.currentTimeMillis() + timeout);
