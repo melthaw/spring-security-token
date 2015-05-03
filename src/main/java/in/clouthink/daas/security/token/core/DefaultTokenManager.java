@@ -36,11 +36,12 @@ public class DefaultTokenManager implements
     }
     
     @Override
-    public void refreshToken(String token) {
-        TokenEntity result = (TokenEntity) tokenProvider.findByToken(token);
-        if (result != null) {
-            result.updateExpiredDate(tokenTimeout);
-            tokenProvider.saveToken(result);
+    public void refreshToken(Token token) {
+        long expiredTime = token.getExpiredDate().getTime();
+        long currentTimeMillis = System.currentTimeMillis();
+        if ((expiredTime - currentTimeMillis) > 0 && (expiredTime - currentTimeMillis) < 60 * 1000) {
+            token.updateExpiredDate(tokenTimeout);
+            tokenProvider.saveToken(token);
         }
     }
     
