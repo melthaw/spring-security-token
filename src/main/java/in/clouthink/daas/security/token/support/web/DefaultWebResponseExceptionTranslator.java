@@ -74,6 +74,16 @@ public class DefaultWebResponseExceptionTranslator implements
                                       HttpStatus.UNAUTHORIZED);
         }
         
+        if (e instanceof AuthenticationRequiredException) {
+            String message = e.getMessage();
+            if (StringUtils.isEmpty(message)) {
+                message = "Authentication required.";
+            }
+            return new ResponseEntity(WebResultWrapper.failedMap(message),
+                                      headers,
+                                      HttpStatus.UNAUTHORIZED);
+        }
+        
         if (e instanceof AccessDeniedException) {
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
