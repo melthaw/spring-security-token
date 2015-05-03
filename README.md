@@ -20,7 +20,7 @@ Thanks Spring Security. There are some useful APIs available for us in Spring Se
 
 ## Maven
 
-So far 1.0.5 is available 
+So far 1.0.6 is available 
 
     <dependency>
         <groupId>in.clouthink.daas</groupId>

@@ -15,6 +15,8 @@ public class DefaultTokenManager implements
     
     private long tokenTimeout = 60 * 60 * 1000;
     
+    private long refreshTokenInteval = 3 * 60 * 1000;
+    
     public DefaultTokenManager() {
     }
     
@@ -24,6 +26,14 @@ public class DefaultTokenManager implements
     
     public void setTokenTimeout(long tokenTimeout) {
         this.tokenTimeout = tokenTimeout;
+    }
+    
+    public long getRefreshTokenInteval() {
+        return refreshTokenInteval;
+    }
+    
+    public void setRefreshTokenInteval(long refreshTokenInteval) {
+        this.refreshTokenInteval = refreshTokenInteval;
     }
     
     @Autowired
@@ -37,9 +47,15 @@ public class DefaultTokenManager implements
     
     @Override
     public void refreshToken(Token token) {
-        long expiredTime = token.getExpiredDate().getTime();
+        if (null == token.getLatestTime()) {
+            token.updateExpiredDate(tokenTimeout);
+            tokenProvider.saveToken(token);
+            return;
+        }
+        
+        long lastTime = token.getLatestTime().getTime();
         long currentTimeMillis = System.currentTimeMillis();
-        if ((expiredTime - currentTimeMillis) > 0 && (expiredTime - currentTimeMillis) < 60 * 1000) {
+        if ((currentTimeMillis - lastTime) > refreshTokenInteval) {
             token.updateExpiredDate(tokenTimeout);
             tokenProvider.saveToken(token);
         }
