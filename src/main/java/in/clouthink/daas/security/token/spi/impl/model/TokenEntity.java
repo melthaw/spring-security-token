@@ -82,4 +82,12 @@ public class TokenEntity implements Token {
     public void setLatestTime(Date latestTime) {
         this.latestTime = latestTime;
     }
+    
+    @Override
+    public void updateExpiredDate(long timeout) {
+        Date date = new Date(System.currentTimeMillis() + timeout);
+        this.setExpiredDate(date);
+        this.setLatestTime(new Date());
+    }
+    
 }

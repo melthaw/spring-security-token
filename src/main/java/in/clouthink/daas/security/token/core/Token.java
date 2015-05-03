@@ -13,4 +13,6 @@ public interface Token extends Serializable {
     
     public Date getLatestTime();
     
+    public void updateExpiredDate(long timeout);
+    
 }

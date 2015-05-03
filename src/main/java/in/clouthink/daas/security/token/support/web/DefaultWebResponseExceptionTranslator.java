@@ -43,7 +43,7 @@ public class DefaultWebResponseExceptionTranslator implements
         }
         
         if (e instanceof InvalidTokenException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The token is invalid."),
+            return new ResponseEntity(WebResultWrapper.failedMap("The token is invalid or expired."),
                                       headers,
                                       HttpStatus.OK);
         }
@@ -68,6 +68,16 @@ public class DefaultWebResponseExceptionTranslator implements
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
                 message = "Authorization failed.";
+            }
+            return new ResponseEntity(WebResultWrapper.failedMap(message),
+                                      headers,
+                                      HttpStatus.UNAUTHORIZED);
+        }
+        
+        if (e instanceof AuthenticationRequiredException) {
+            String message = e.getMessage();
+            if (StringUtils.isEmpty(message)) {
+                message = "Authentication required.";
             }
             return new ResponseEntity(WebResultWrapper.failedMap(message),
                                       headers,

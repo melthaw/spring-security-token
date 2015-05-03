@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import in.clouthink.daas.security.token.core.Token;
 import in.clouthink.daas.security.token.spi.TokenProvider;
+import org.springframework.scheduling.annotation.Scheduled;
 
 /**
  */
@@ -25,8 +26,7 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         redisTemplate.opsForHash().put("T:" + token.getToken(),
                                        token.getToken(),
                                        token);
-        redisTemplate.expireAt("T:" + token.getToken(),
-                               token.getExpiredDate());
+        redisTemplate.expireAt("T:" + token.getToken(), token.getExpiredDate());
     }
     
     @Override
@@ -44,4 +44,5 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         redisTemplate.opsForHash().delete("T:" + token.getToken(),
                                           token.getToken());
     }
+    
 }
