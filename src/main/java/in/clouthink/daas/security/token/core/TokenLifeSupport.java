@@ -10,4 +10,10 @@ public interface TokenLifeSupport {
      */
     public void setTokenTimeout(long timeout);
     
+    /**
+     * @param refreshTokenInteval
+     *            milli seconds
+     */
+    public void setRefreshTokenInteval(long refreshTokenInteval);
+    
 }

@@ -71,6 +71,8 @@ public class TokenAuthenticationProvider implements
         if (!user.isEnabled()) {
             throw new UserDisabledException();
         }
+
+        tokenManager.refreshToken(token);
         
         return new DefaultAuthentication(token);
     }
