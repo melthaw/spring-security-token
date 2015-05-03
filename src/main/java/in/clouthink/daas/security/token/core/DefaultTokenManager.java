@@ -36,6 +36,15 @@ public class DefaultTokenManager implements
     }
     
     @Override
+    public void refreshToken(String token) {
+        TokenEntity result = (TokenEntity) tokenProvider.findByToken(token);
+        if (result != null) {
+            result.updateExpiredDate(tokenTimeout);
+            tokenProvider.saveToken(result);
+        }
+    }
+    
+    @Override
     public Token createToken(User owner) {
         Token token = TokenEntity.create(owner, tokenTimeout);
         tokenProvider.saveToken(token);

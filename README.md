@@ -11,7 +11,7 @@ Thanks Spring Security. There are some useful APIs available for us in Spring Se
 
 # Dependencies
 
-* Spring Framework 3.2.x (Core & Web)
+* Spring Framework 3.2.x (Core & Web Required)
 * Spring Data Redis (Optional)
 * Spring Data Mongodb (Optional)
 * Spymemcached (Optional)
@@ -20,7 +20,7 @@ Thanks Spring Security. There are some useful APIs available for us in Spring Se
 
 ## Maven
 
-So far 1.0.3 is available 
+So far 1.0.4 is available 
 
     <dependency>
         <groupId>in.clouthink.daas</groupId>

@@ -1,6 +1,8 @@
 package in.clouthink.daas.security.token.core;
 
-public interface TokenManager extends TokenLifeSupport{
+public interface TokenManager extends TokenLifeSupport {
+    
+    public void refreshToken(String token);
     
     public Token createToken(User owner);
     

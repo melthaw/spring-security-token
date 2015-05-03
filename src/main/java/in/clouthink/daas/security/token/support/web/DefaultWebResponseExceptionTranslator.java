@@ -43,7 +43,7 @@ public class DefaultWebResponseExceptionTranslator implements
         }
         
         if (e instanceof InvalidTokenException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The token is invalid."),
+            return new ResponseEntity(WebResultWrapper.failedMap("The token is invalid or expired."),
                                       headers,
                                       HttpStatus.OK);
         }
