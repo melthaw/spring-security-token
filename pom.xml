@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
     <name>daas-token</name>
     <url>http://clouthink.in</url>
-    <description>The light-weight token security framework (Based on Spring) </description>
+    <description>The light-weight token security framework (Based on Spring)</description>
 
     <licenses>
         <license>
