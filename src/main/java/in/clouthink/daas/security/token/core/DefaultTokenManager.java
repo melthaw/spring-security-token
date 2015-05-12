@@ -71,6 +71,9 @@ public class DefaultTokenManager implements
     @Override
     public Token findToken(String token) {
         Token result = tokenProvider.findByToken(token);
+        if (result == null) {
+            return null;
+        }
         // auto revoke the token if the token is expired
         if (result.getExpiredDate().getTime() < System.currentTimeMillis()) {
             tokenProvider.revokeToken(result);
