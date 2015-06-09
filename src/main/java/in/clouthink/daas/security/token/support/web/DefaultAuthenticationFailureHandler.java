@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -13,9 +14,17 @@ import org.springframework.http.ResponseEntity;
 public class DefaultAuthenticationFailureHandler implements
                                                 AuthenticationFailureHandler {
     
-    private WebResponseExceptionTranslator translater = new DefaultWebResponseExceptionTranslator();
+    private WebResponseExceptionTranslator translater;
     
     private HttpResponseRenderer renderer = new HttpResponseJsonRenderer();
+    
+    public DefaultAuthenticationFailureHandler() {
+        translater = new DefaultWebResponseExceptionTranslator();
+    }
+    
+    public DefaultAuthenticationFailureHandler(MessageProvider messageProvider) {
+        translater = new DefaultWebResponseExceptionTranslator(messageProvider);
+    }
     
     public WebResponseExceptionTranslator getTranslater() {
         return translater;

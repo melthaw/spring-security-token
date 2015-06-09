@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
+import in.clouthink.daas.security.token.support.i18n.DefaultMessageProvider;
+import in.clouthink.daas.security.token.support.i18n.MessageProvider;
+import in.clouthink.daas.security.token.support.web.*;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -33,10 +36,6 @@ import in.clouthink.daas.security.token.spi.impl.TokenAuthenticationProvider;
 import in.clouthink.daas.security.token.spi.impl.UsernamePasswordAuthenticationProvider;
 import in.clouthink.daas.security.token.spi.impl.memory.IdentityProviderMemoryImpl;
 import in.clouthink.daas.security.token.spi.impl.memory.TokenProviderMemoryImpl;
-import in.clouthink.daas.security.token.support.web.AuthenticationFilter;
-import in.clouthink.daas.security.token.support.web.AuthorizationFilter;
-import in.clouthink.daas.security.token.support.web.LoginEndpoint;
-import in.clouthink.daas.security.token.support.web.LogoutEndpoint;
 
 @Configuration
 public class TokenConfiguration implements ImportAware, BeanFactoryAware {
@@ -100,36 +99,44 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthenticationManager")
-    public AuthenticationFilter daasTokenAuthenticationFilter(AuthenticationManager authenticationManager) {
+    public AuthenticationFilter daasTokenAuthenticationFilter(AuthenticationManager authenticationManager,
+                                                              MessageProvider messageProvider) {
         AuthenticationFilter result = new AuthenticationFilter();
         result.setAuthenticationManager(authenticationManager);
+        result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
         return result;
     }
     
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthorizationManager")
-    public AuthorizationFilter daasTokenAuthorizationFilter(AuthorizationManager authorizationManager) {
+    public AuthorizationFilter daasTokenAuthorizationFilter(AuthorizationManager authorizationManager,
+                                                            MessageProvider messageProvider) {
         AuthorizationFilter result = new AuthorizationFilter();
         result.setAuthorizationManager(authorizationManager);
+        result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
         return result;
     }
     
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthenticationManager")
-    public LoginEndpoint daasTokenLoginEndpoint(AuthenticationManager authenticationManager) {
+    public LoginEndpoint daasTokenLoginEndpoint(AuthenticationManager authenticationManager,
+                                                MessageProvider messageProvider) {
         LoginEndpoint result = new LoginEndpoint();
         result.setAuthenticationManager(authenticationManager);
+        result.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(messageProvider));
         return result;
     }
     
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthenticationManager")
-    public LogoutEndpoint daasTokenLogoutEndpoint(AuthenticationManager authenticationManager) {
+    public LogoutEndpoint daasTokenLogoutEndpoint(AuthenticationManager authenticationManager,
+                                                  MessageProvider messageProvider) {
         LogoutEndpoint result = new LogoutEndpoint();
         result.setAuthenticationManager(authenticationManager);
+        result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
         return result;
     }
     
@@ -209,6 +216,13 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Bean
     public IdentityProvider daasDefaultIdentityProvider() {
         return new IdentityProviderMemoryImpl();
+    }
+    
+    @Bean
+    public MessageProvider messageProvider() {
+        MessageProvider result = new DefaultMessageProvider();
+        tokenConfigurer.configure(result);
+        return result;
     }
     
 }

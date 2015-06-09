@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -13,16 +14,24 @@ import org.springframework.http.ResponseEntity;
 public class DefaultAuthorizationFailureHandler implements
                                                AuthorizationFailureHandler {
     
-    private WebResponseExceptionTranslator translater = new DefaultWebResponseExceptionTranslator();
+    private WebResponseExceptionTranslator translator;
     
     private HttpResponseRenderer renderer = new HttpResponseJsonRenderer();
     
-    public WebResponseExceptionTranslator getTranslater() {
-        return translater;
+    public DefaultAuthorizationFailureHandler() {
+        translator = new DefaultWebResponseExceptionTranslator();
     }
     
-    public void setTranslater(WebResponseExceptionTranslator translater) {
-        this.translater = translater;
+    public DefaultAuthorizationFailureHandler(MessageProvider messageProvider) {
+        translator = new DefaultWebResponseExceptionTranslator(messageProvider);
+    }
+    
+    public WebResponseExceptionTranslator getTranslator() {
+        return translator;
+    }
+    
+    public void setTranslator(WebResponseExceptionTranslator translator) {
+        this.translator = translator;
     }
     
     public HttpResponseRenderer getRenderer() {
@@ -39,7 +48,7 @@ public class DefaultAuthorizationFailureHandler implements
                        Exception exception) throws IOException,
                                            ServletException {
         try {
-            ResponseEntity result = translater.translate(exception);
+            ResponseEntity result = translator.translate(exception);
             renderer.handleResponse(result, request, response);
             response.flushBuffer();
         }

@@ -1,6 +1,8 @@
 package in.clouthink.daas.security.token.support.web;
 
 import in.clouthink.daas.security.token.exception.*;
+import in.clouthink.daas.security.token.support.i18n.DefaultMessageProvider;
+import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,46 +12,59 @@ import org.springframework.util.StringUtils;
 public class DefaultWebResponseExceptionTranslator implements
                                                   WebResponseExceptionTranslator {
     
+    private MessageProvider messageProvider = new DefaultMessageProvider();
+    
+    public DefaultWebResponseExceptionTranslator() {
+    }
+    
+    public DefaultWebResponseExceptionTranslator(MessageProvider messageProvider) {
+        this.messageProvider = messageProvider;
+    }
+    
+    public void setMessageProvider(MessageProvider messageProvider) {
+        this.messageProvider = messageProvider;
+    }
+    
     public ResponseEntity<?> translate(Exception e) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Cache-Control", "no-store");
         headers.set("Pragma", "no-cache");
         
         if (e instanceof UserNotFoundException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("Invalid username or password."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
                                       headers,
                                       HttpStatus.OK);
         }
         if (e instanceof UserLockedException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The user is locked."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.USER_IS_LOCKED)),
                                       headers,
                                       HttpStatus.OK);
         }
         if (e instanceof UserExpiredException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The user is expired."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.USER_IS_EXPIRED)),
                                       headers,
                                       HttpStatus.OK);
         }
         if (e instanceof UserDisabledException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The user is disabled."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.USER_IS_DISABLED)),
                                       headers,
                                       HttpStatus.OK);
         }
         
         if (e instanceof BadCredetialException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("Invalid username or password."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
                                       headers,
                                       HttpStatus.OK);
         }
         
         if (e instanceof InvalidTokenException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The token is invalid or expired."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_TOKEN_OR_EXPIRED)),
                                       headers,
                                       HttpStatus.OK);
         }
         
         if (e instanceof TokenExpiredException) {
-            return new ResponseEntity(WebResultWrapper.failedMap("The token is expired."),
+            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_TOKEN_OR_EXPIRED)),
                                       headers,
                                       HttpStatus.OK);
         }
@@ -57,7 +72,7 @@ public class DefaultWebResponseExceptionTranslator implements
         if (e instanceof AuthenticationFailureException) {
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
-                message = "Authentication failed.";
+                message = messageProvider.getMessage(ErrorConstants.AUTHENTICATION_FAILED);
             }
             return new ResponseEntity(WebResultWrapper.failedMap(message),
                                       headers,
@@ -67,7 +82,7 @@ public class DefaultWebResponseExceptionTranslator implements
         if (e instanceof AuthorizationFailureException) {
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
-                message = "Authorization failed.";
+                message = messageProvider.getMessage(ErrorConstants.AUTHORIZATION_FAILED);
             }
             return new ResponseEntity(WebResultWrapper.failedMap(message),
                                       headers,
@@ -77,7 +92,7 @@ public class DefaultWebResponseExceptionTranslator implements
         if (e instanceof AuthenticationRequiredException) {
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
-                message = "Authentication required.";
+                message = messageProvider.getMessage(ErrorConstants.AUTHENTICATION_REQUIRED);
             }
             return new ResponseEntity(WebResultWrapper.failedMap(message),
                                       headers,
@@ -87,7 +102,7 @@ public class DefaultWebResponseExceptionTranslator implements
         if (e instanceof AccessDeniedException) {
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
-                message = "No permission.Access denied.";
+                message = messageProvider.getMessage(ErrorConstants.NO_PERMISSION);
             }
             return new ResponseEntity(WebResultWrapper.failedMap(message),
                                       headers,
@@ -98,4 +113,5 @@ public class DefaultWebResponseExceptionTranslator implements
                                   headers,
                                   HttpStatus.OK);
     }
+    
 }

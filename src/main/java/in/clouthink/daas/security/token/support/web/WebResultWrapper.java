@@ -60,6 +60,14 @@ public class WebResultWrapper {
         }
     }
     
+    public static Map<String, Object> failedMap(String errorCode, String message) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("succeed", Boolean.FALSE);
+        result.put("errorCode", errorCode);
+        result.put("message", message);
+        return result;
+    }
+    
     public static Map<String, Object> failedMap(String message) {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("succeed", Boolean.FALSE);
@@ -67,9 +75,27 @@ public class WebResultWrapper {
         return result;
     }
     
+    public static Map<String, Object> failedMap(String errorCode,
+                                                String[] messages) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("succeed", Boolean.FALSE);
+        result.put("errorCode", errorCode);
+        result.put("messages", messages);
+        return result;
+    }
+    
     public static Map<String, Object> failedMap(String[] messages) {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("succeed", Boolean.FALSE);
+        result.put("messages", messages);
+        return result;
+    }
+    
+    public static Map<String, Object> failedMap(String errorCode,
+                                                List<String> messages) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("succeed", Boolean.FALSE);
+        result.put("errorCode", errorCode);
         result.put("messages", messages);
         return result;
     }

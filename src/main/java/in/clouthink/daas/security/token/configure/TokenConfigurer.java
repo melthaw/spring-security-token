@@ -1,12 +1,23 @@
 package in.clouthink.daas.security.token.configure;
 
 import in.clouthink.daas.security.token.core.TokenLifeSupport;
+import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import in.clouthink.daas.security.token.support.web.AuthenticationFilter;
 import in.clouthink.daas.security.token.support.web.AuthorizationFilter;
 import in.clouthink.daas.security.token.support.web.LoginEndpoint;
 import in.clouthink.daas.security.token.support.web.LogoutEndpoint;
 
+import java.util.Locale;
+
 public interface TokenConfigurer {
+    
+    /**
+     * The default value is Locale#ENGLISH, if the locale is not supported,
+     * default value will take effect.
+     * 
+     * @param messageProvider
+     */
+    public void configure(MessageProvider messageProvider);
     
     public void configure(AuthorizationFilter filter);
     
