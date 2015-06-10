@@ -31,40 +31,47 @@ public class DefaultWebResponseExceptionTranslator implements
         headers.set("Pragma", "no-cache");
         
         if (e instanceof UserNotFoundException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
                                       headers,
                                       HttpStatus.OK);
         }
         if (e instanceof UserLockedException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.USER_IS_LOCKED)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.USER_IS_LOCKED)),
                                       headers,
                                       HttpStatus.OK);
         }
         if (e instanceof UserExpiredException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.USER_IS_EXPIRED)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.USER_IS_EXPIRED)),
                                       headers,
                                       HttpStatus.OK);
         }
         if (e instanceof UserDisabledException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.USER_IS_DISABLED)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.USER_IS_DISABLED)),
                                       headers,
                                       HttpStatus.OK);
         }
         
         if (e instanceof BadCredetialException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
                                       headers,
                                       HttpStatus.OK);
         }
         
         if (e instanceof InvalidTokenException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_TOKEN_OR_EXPIRED)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.INVALID_TOKEN_OR_EXPIRED)),
                                       headers,
                                       HttpStatus.OK);
         }
         
         if (e instanceof TokenExpiredException) {
-            return new ResponseEntity(WebResultWrapper.failedMap(messageProvider.getMessage(ErrorConstants.INVALID_TOKEN_OR_EXPIRED)),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 messageProvider.getMessage(ErrorConstants.INVALID_TOKEN_OR_EXPIRED)),
                                       headers,
                                       HttpStatus.OK);
         }
@@ -74,7 +81,8 @@ public class DefaultWebResponseExceptionTranslator implements
             if (StringUtils.isEmpty(message)) {
                 message = messageProvider.getMessage(ErrorConstants.AUTHENTICATION_FAILED);
             }
-            return new ResponseEntity(WebResultWrapper.failedMap(message),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 message),
                                       headers,
                                       HttpStatus.OK);
         }
@@ -84,7 +92,8 @@ public class DefaultWebResponseExceptionTranslator implements
             if (StringUtils.isEmpty(message)) {
                 message = messageProvider.getMessage(ErrorConstants.AUTHORIZATION_FAILED);
             }
-            return new ResponseEntity(WebResultWrapper.failedMap(message),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 message),
                                       headers,
                                       HttpStatus.UNAUTHORIZED);
         }
@@ -94,7 +103,8 @@ public class DefaultWebResponseExceptionTranslator implements
             if (StringUtils.isEmpty(message)) {
                 message = messageProvider.getMessage(ErrorConstants.AUTHENTICATION_REQUIRED);
             }
-            return new ResponseEntity(WebResultWrapper.failedMap(message),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.UNAUTHORIZED.value(),
+                                                                 message),
                                       headers,
                                       HttpStatus.UNAUTHORIZED);
         }
@@ -104,7 +114,8 @@ public class DefaultWebResponseExceptionTranslator implements
             if (StringUtils.isEmpty(message)) {
                 message = messageProvider.getMessage(ErrorConstants.NO_PERMISSION);
             }
-            return new ResponseEntity(WebResultWrapper.failedMap(message),
+            return new ResponseEntity(WebResultWrapper.failedMap(HttpStatus.FORBIDDEN.value(),
+                                                                 message),
                                       headers,
                                       HttpStatus.FORBIDDEN);
         }
