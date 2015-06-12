@@ -16,4 +16,19 @@ public interface TokenLifeSupport {
      */
     public void setRefreshTokenInteval(long refreshTokenInteval);
     
+    /**
+     * @return true by default
+     */
+    public boolean isMultiTokensAllowed();
+    
+    /**
+     * 
+     */
+    public void enableMultiTokens();
+    
+    /**
+     *
+     */
+    public void disableMultiTokens();
+    
 }

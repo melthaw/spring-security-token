@@ -18,7 +18,11 @@ public interface TokenConfigurer {
      * @param messageProvider
      */
     public void configure(MessageProvider messageProvider);
-    
+
+    /**
+     *
+     * @param filter
+     */
     public void configure(AuthorizationFilter filter);
     
     public void configure(AuthenticationFilter filter);

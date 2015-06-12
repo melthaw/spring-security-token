@@ -1,11 +1,15 @@
 package in.clouthink.daas.security.token.spi.impl.memcached;
 
 import in.clouthink.daas.security.token.core.Token;
+import in.clouthink.daas.security.token.core.User;
 import in.clouthink.daas.security.token.spi.TokenProvider;
 import net.spy.memcached.MemcachedClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  */
@@ -39,6 +43,12 @@ public class TokenProviderMemcachedImpl implements TokenProvider<Token> {
             return;
         }
         memcachedClient.delete(token.getToken());
+    }
+    
+    @Override
+    public List<Token> findByUser(User user) {
+        // TODO : NOT SUPPORTED NOW
+        return Collections.EMPTY_LIST;
     }
     
 }

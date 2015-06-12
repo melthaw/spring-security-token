@@ -6,6 +6,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
+import java.util.List;
+
 public class DefaultTokenManager implements
                                 TokenManager,
                                 TokenLifeSupport,
@@ -16,6 +18,8 @@ public class DefaultTokenManager implements
     private long tokenTimeout = 60 * 60 * 1000;
     
     private long refreshTokenInteval = 3 * 60 * 1000;
+    
+    private boolean allowedMultiTokens = true;
     
     public DefaultTokenManager() {
     }
@@ -63,6 +67,15 @@ public class DefaultTokenManager implements
     
     @Override
     public Token createToken(User owner) {
+        if (!allowedMultiTokens) {
+            List<Token> tokens = tokenProvider.findByUser(owner);
+            if (tokens != null) {
+                for (Token token : tokens) {
+                    tokenProvider.revokeToken(token);
+                }
+            }
+        }
+        
         Token token = TokenEntity.create(owner, tokenTimeout);
         tokenProvider.saveToken(token);
         return token;
@@ -85,6 +98,21 @@ public class DefaultTokenManager implements
     @Override
     public void revokeToken(String token) {
         tokenProvider.revokeToken(findToken(token));
+    }
+    
+    @Override
+    public boolean isMultiTokensAllowed() {
+        return this.allowedMultiTokens;
+    }
+    
+    @Override
+    public void enableMultiTokens() {
+        this.allowedMultiTokens = true;
+    }
+    
+    @Override
+    public void disableMultiTokens() {
+        this.allowedMultiTokens = false;
     }
     
     @Override

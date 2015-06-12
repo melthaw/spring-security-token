@@ -1,14 +1,13 @@
 package in.clouthink.daas.security.token.spi.impl.memory;
 
 import in.clouthink.daas.security.token.core.Token;
+import in.clouthink.daas.security.token.core.User;
 import in.clouthink.daas.security.token.spi.TokenProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TokenProviderMemoryImpl implements TokenProvider<Token> {
@@ -54,4 +53,19 @@ public class TokenProviderMemoryImpl implements TokenProvider<Token> {
         }
     }
     
+    @Override
+    public List<Token> findByUser(User user) {
+        if (user == null) {
+            return null;
+        }
+        List<Token> result = new ArrayList<Token>();
+        for (Token token : tokenTokenMap.values()) {
+            if (token.getOwner() != null && token.getOwner()
+                                                 .getId()
+                                                 .equals(user.getId())) {
+                result.add(token);
+            }
+        }
+        return result;
+    }
 }

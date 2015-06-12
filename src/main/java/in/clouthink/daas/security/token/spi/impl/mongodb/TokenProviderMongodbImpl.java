@@ -1,10 +1,13 @@
 package in.clouthink.daas.security.token.spi.impl.mongodb;
 
+import in.clouthink.daas.security.token.core.User;
 import in.clouthink.daas.security.token.spi.TokenProvider;
 import in.clouthink.daas.security.token.spi.impl.model.TokenEntity;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 /**
  */
@@ -40,4 +43,13 @@ public class TokenProviderMongodbImpl implements TokenProvider<TokenEntity> {
         }
         tokenEntityRepository.delete(token);
     }
+    
+    @Override
+    public List<TokenEntity> findByUser(User user) {
+        if (user == null) {
+            return null;
+        }
+        return tokenEntityRepository.findByOwnerId(user.getId());
+    }
+    
 }

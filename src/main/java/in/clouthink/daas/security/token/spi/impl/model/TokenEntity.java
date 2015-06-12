@@ -39,7 +39,8 @@ public class TokenEntity implements Token {
     
     @Id
     private String token;
-    
+
+    @Indexed
     @DBRef
     private User owner;
     
