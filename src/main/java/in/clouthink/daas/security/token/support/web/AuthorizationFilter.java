@@ -34,6 +34,8 @@ public class AuthorizationFilter extends GenericFilterBean {
     
     private RequestMatcher urlRequestMatcher;
     
+    private RequestMatcher ignoredUrlRequestMatcher;
+    
     private AuthorizationManager authorizationManager;
     
     /**
@@ -64,6 +66,16 @@ public class AuthorizationFilter extends GenericFilterBean {
     public final void setUrlRequestMatcher(RequestMatcher urlRequestMatcher) {
         Assert.notNull(urlRequestMatcher, "urlRequestMatcher cannot be null");
         this.urlRequestMatcher = urlRequestMatcher;
+    }
+    
+    public void setIgnoredProcessesUrl(String ignoreFilterProcessesUrl) {
+        this.ignoredUrlRequestMatcher = new AntPathRequestMatcher(ignoreFilterProcessesUrl);
+    }
+    
+    public void setIgnoredUrlRequestMatcher(RequestMatcher ignoredUrlRequestMatcher) {
+        Assert.notNull(ignoredUrlRequestMatcher,
+                       "ignoredUrlRequestMatcher cannot be null");
+        this.ignoredUrlRequestMatcher = ignoredUrlRequestMatcher;
     }
     
     public AuthorizationManager getAuthorizationManager() {
@@ -135,6 +147,11 @@ public class AuthorizationFilter extends GenericFilterBean {
     
     protected boolean isUrlProcessingMatched(HttpServletRequest request,
                                              HttpServletResponse response) {
+        if (ignoredUrlRequestMatcher != null) {
+            if (ignoredUrlRequestMatcher.matches(request)) {
+                return false;
+            }
+        }
         return urlRequestMatcher.matches(request);
     }
     
@@ -143,4 +160,5 @@ public class AuthorizationFilter extends GenericFilterBean {
         Assert.notNull(authorizationManager,
                        "authorizationManager must be specified");
     }
+    
 }
