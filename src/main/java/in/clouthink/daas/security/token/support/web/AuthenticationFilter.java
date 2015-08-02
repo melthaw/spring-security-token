@@ -10,6 +10,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import in.clouthink.daas.security.token.spi.AuditCallback;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     private RequestMatcher ignoredUrlRequestMatcher;
     
     private AuthenticationManager authenticationManager;
-    
+
     /**
      *
      */
@@ -70,7 +71,7 @@ public class AuthenticationFilter extends GenericFilterBean {
         Assert.notNull(urlRequestMatcher, "urlRequestMatcher cannot be null");
         this.urlRequestMatcher = urlRequestMatcher;
     }
-    
+
     public void setIgnoredProcessesUrl(String ignoreFilterProcessesUrl) {
         this.ignoredUrlRequestMatcher = new AntPathRequestMatcher(ignoreFilterProcessesUrl);
     }
@@ -101,7 +102,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
-                                                 IOException {
+                                                  IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isUrlProcessingMatched(request, response)) {
@@ -115,7 +116,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     private void doAuthentication(HttpServletRequest request,
                                   HttpServletResponse response,
                                   FilterChain chain) throws IOException,
-                                                    ServletException {
+                                                     ServletException {
         try {
             String authHeader = request.getHeader("Authorization");
             if (StringUtils.isEmpty(authHeader)) {

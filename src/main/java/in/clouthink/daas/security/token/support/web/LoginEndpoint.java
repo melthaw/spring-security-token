@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
+import in.clouthink.daas.security.token.spi.AuditCallback;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,8 @@ public class LoginEndpoint extends GenericFilterBean {
     private RequestMatcher loginRequestMatcher;
     
     private AuthenticationManager authenticationManager;
+    
+    private AuditCallback auditCallback;
     
     /**
      *
@@ -128,11 +131,20 @@ public class LoginEndpoint extends GenericFilterBean {
         this.authenticationManager = authenticationManager;
     }
     
+    public AuditCallback getAuditCallback() {
+        return auditCallback;
+    }
+    
+    public void setAuditCallback(AuditCallback auditCallback) {
+        Assert.notNull(auditCallback, "auditCallback cannot be null");
+        this.auditCallback = auditCallback;
+    }
+    
     @Override
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
-                                                 IOException {
+                                                  IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isLoginMatched(request, response)) {
@@ -146,10 +158,11 @@ public class LoginEndpoint extends GenericFilterBean {
     private void doLogin(HttpServletRequest request,
                          HttpServletResponse response,
                          FilterChain chain) throws IOException,
-                                           ServletException {
+                                            ServletException {
         try {
             if (postOnly && !"POST".equals(request.getMethod())) {
-                throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
+                throw new AuthenticationException("Authentication method not supported: "
+                                                  + request.getMethod());
             }
             
             String username = obtainUsername(request);
@@ -169,15 +182,30 @@ public class LoginEndpoint extends GenericFilterBean {
             
             UsernamePasswordAuthenticationRequest authRequest = new UsernamePasswordAuthenticationRequest(username,
                                                                                                           password);
-            
+                                                                                                          
             Authentication authentication = authenticationManager.login(authRequest);
             
             authenticationSuccessHandler.onAuthenticationSuccess(request,
                                                                  response,
                                                                  authentication);
+                                                                 
+            if (auditCallback != null) {
+                try {
+                    auditCallback.auditLogin(request, true);
+                }
+                catch (Throwable e) {
+                }
+            }
         }
         catch (Exception e) {
             logger.error(e, e);
+            if (auditCallback != null) {
+                try {
+                    auditCallback.auditLogin(request, false);
+                }
+                catch (Throwable e1) {
+                }
+            }
             authenticationFailureHandler.handle(request, response, e);
         }
     }
