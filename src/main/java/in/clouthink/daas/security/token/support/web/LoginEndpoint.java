@@ -9,21 +9,18 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
-import in.clouthink.daas.security.token.spi.AuditCallback;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
 import in.clouthink.daas.security.token.core.Authentication;
 import in.clouthink.daas.security.token.core.AuthenticationManager;
 import in.clouthink.daas.security.token.core.UsernamePasswordAuthenticationRequest;
-import in.clouthink.daas.security.token.exception.AuthenticationException;
-import org.springframework.web.filter.OncePerRequestFilter;
+import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
+import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
+import in.clouthink.daas.security.token.spi.AuditCallback;
 
 public class LoginEndpoint extends GenericFilterBean {
     
@@ -160,11 +157,6 @@ public class LoginEndpoint extends GenericFilterBean {
                          FilterChain chain) throws IOException,
                                             ServletException {
         try {
-            if (postOnly && !"POST".equals(request.getMethod())) {
-                throw new AuthenticationException("Authentication method not supported: "
-                                                  + request.getMethod());
-            }
-            
             String username = obtainUsername(request);
             String password = obtainPassword(request);
             
@@ -220,7 +212,8 @@ public class LoginEndpoint extends GenericFilterBean {
     
     protected boolean isLoginMatched(HttpServletRequest request,
                                      HttpServletResponse response) {
-        return loginRequestMatcher.matches(request);
+        return loginRequestMatcher.matches(request)
+               && "POST".equals(request.getMethod());
     }
     
     @Override
