@@ -1,7 +1,6 @@
 package in.clouthink.daas.security.token.support.web;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -10,21 +9,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import in.clouthink.daas.security.token.spi.AuditCallback;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import in.clouthink.daas.security.token.core.Authentication;
 import in.clouthink.daas.security.token.core.AuthenticationManager;
 import in.clouthink.daas.security.token.core.SecurityContextManager;
 import in.clouthink.daas.security.token.core.TokenAuthenticationRequest;
-import in.clouthink.daas.security.token.exception.AuthenticationRequiredException;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.crypto.codec.Base64;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -32,7 +25,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     
     private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
     
-    private static final String HEADER_AUTHORIZATION_PREFIX = "Bearer ";
+    private TokenResolver tokenResolver = new BearerAuthorizationHeaderTokenResolver();
     
     private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
     
@@ -41,7 +34,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     private RequestMatcher ignoredUrlRequestMatcher;
     
     private AuthenticationManager authenticationManager;
-
+    
     /**
      *
      */
@@ -71,7 +64,7 @@ public class AuthenticationFilter extends GenericFilterBean {
         Assert.notNull(urlRequestMatcher, "urlRequestMatcher cannot be null");
         this.urlRequestMatcher = urlRequestMatcher;
     }
-
+    
     public void setIgnoredProcessesUrl(String ignoreFilterProcessesUrl) {
         this.ignoredUrlRequestMatcher = new AntPathRequestMatcher(ignoreFilterProcessesUrl);
     }
@@ -80,6 +73,10 @@ public class AuthenticationFilter extends GenericFilterBean {
         Assert.notNull(ignoredUrlRequestMatcher,
                        "ignoredUrlRequestMatcher cannot be null");
         this.ignoredUrlRequestMatcher = ignoredUrlRequestMatcher;
+    }
+    
+    public void setTokenResolver(TokenResolver tokenResolver) {
+        this.tokenResolver = tokenResolver;
     }
     
     public AuthorizationFailureHandler getAuthorizationFailureHandler() {
@@ -118,24 +115,7 @@ public class AuthenticationFilter extends GenericFilterBean {
                                   FilterChain chain) throws IOException,
                                                      ServletException {
         try {
-            String authHeader = request.getHeader("Authorization");
-            if (StringUtils.isEmpty(authHeader)) {
-                throw new AuthenticationRequiredException();
-            }
-            
-            if (authHeader.length() <= HEADER_AUTHORIZATION_PREFIX.length()) {
-                throw new IllegalArgumentException("Unrecognized Authorization header.");
-            }
-            
-            String base64Final = authHeader.substring(HEADER_AUTHORIZATION_PREFIX.length());
-            String tokenValue = null;
-            try {
-                tokenValue = new String(Base64.decode(base64Final.getBytes("UTF-8")));
-            }
-            catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException("Unrecognized Authorization header.");
-            }
-            
+            String tokenValue = tokenResolver.resolve(request, response);
             Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
             SecurityContextManager.getContext()
                                   .setAuthentication(authentication);
