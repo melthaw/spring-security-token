@@ -39,7 +39,7 @@ public class TokenEntity implements Token {
     
     @Id
     private String token;
-
+    
     @Indexed
     @DBRef
     private User owner;
@@ -47,6 +47,8 @@ public class TokenEntity implements Token {
     private Date expiredDate;
     
     private Date latestTime;
+    
+    private boolean enabled = true;
     
     @Override
     public String getToken() {
@@ -85,10 +87,24 @@ public class TokenEntity implements Token {
     }
     
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
+    @Override
     public void updateExpiredDate(long timeout) {
         Date date = new Date(System.currentTimeMillis() + timeout);
         this.setExpiredDate(date);
         this.setLatestTime(new Date());
     }
     
+    @Override
+    public void disable() {
+        this.enabled = false;
+    }
+
 }

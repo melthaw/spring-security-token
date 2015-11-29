@@ -8,6 +8,8 @@ public abstract class ErrorConstants {
     
     public static final String INVALID_TOKEN_OR_EXPIRED = "error.invalidTokenOrExpired";
     
+    public static final String TOKEN_IS_DISABLED = "error.tokenIsDisabled";
+    
     public static final String USER_IS_LOCKED = "error.userIsLocked";
     
     public static final String USER_IS_DISABLED = "error.userIsDisabled";

@@ -65,9 +65,9 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         if (token.getOwner() == null) {
             return;
         }
-        redisTemplateSet.opsForSet().remove("U:"    + token.getOwner()
-                                                           .getUsername(),
-                                            token.getToken());
+        redisTemplateSet.opsForSet()
+                        .remove("U:" + token.getOwner().getUsername(),
+                                token.getToken());
     }
     
     @Override
@@ -78,7 +78,8 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         List<Token> result = new ArrayList<Token>();
         
         Set<String> tokens = redisTemplateSet.opsForSet()
-                                             .members("U:" + user.getUsername());
+                                             .members("U:"
+                                                      + user.getUsername());
         for (String token : tokens) {
             Token t = findByToken(token);
             if (t != null) {

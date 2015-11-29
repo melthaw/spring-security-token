@@ -67,7 +67,15 @@ public class WebResultWrapper {
         result.put("message", message);
         return result;
     }
-    
+
+    public static Map<String, Object> failedMap(String errorCode, String message) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        result.put("succeed", Boolean.FALSE);
+        result.put("errorCode", errorCode);
+        result.put("message", message);
+        return result;
+    }
+
     public static Map<String, Object> failedMap(String message) {
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("succeed", Boolean.FALSE);

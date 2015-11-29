@@ -14,9 +14,9 @@ import in.clouthink.daas.security.token.spi.IdentityProvider;
 /**
  */
 public class TokenAuthenticationProvider implements
-                                        AuthenticationProvider<TokenAuthenticationRequest>,
-                                        InitializingBean {
-    
+                                         AuthenticationProvider<TokenAuthenticationRequest>,
+                                         InitializingBean {
+                                         
     private IdentityProvider identityProvider;
     
     private TokenManager tokenManager;
@@ -52,9 +52,14 @@ public class TokenAuthenticationProvider implements
             throw new InvalidTokenException();
         }
         
+        if (!token.isEnabled()) {
+            throw new TokenDisabledException();
+        }
+        
         Date expiredDate = token.getExpiredDate();
         
-        if (expiredDate.getTime() < System.currentTimeMillis()) {
+        if (expiredDate == null
+            || expiredDate.getTime() < System.currentTimeMillis()) {
             throw new TokenExpiredException();
         }
         

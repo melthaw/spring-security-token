@@ -6,14 +6,18 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class DefaultTokenManager implements
-                                TokenManager,
-                                TokenLifeSupport,
-                                InitializingBean {
-    
+                                 TokenManager,
+                                 TokenLifeSupport,
+                                 InitializingBean {
+                                 
     private TokenProvider tokenProvider;
+    
+    private short maxAllowedTokenPerUser = 3;
     
     private long tokenTimeout = 60 * 60 * 1000;
     
@@ -70,8 +74,44 @@ public class DefaultTokenManager implements
         if (!allowedMultiTokens) {
             List<Token> tokens = tokenProvider.findByUser(owner);
             if (tokens != null) {
-                for (Token token : tokens) {
-                    tokenProvider.revokeToken(token);
+                int existedTokenCount = tokens.size();
+                if (existedTokenCount > (maxAllowedTokenPerUser - 1)) {
+                    Collections.sort(tokens, new Comparator<Token>() {
+                        @Override
+                        public int compare(Token o1, Token o2) {
+                            if (o1.getExpiredDate() != null
+                                && o2.getExpiredDate() != null) {
+                                long o1expiredTimestamp = o1.getExpiredDate()
+                                                            .getTime();
+                                long o2expiredTimestamp = o2.getExpiredDate()
+                                                            .getTime();
+                                if (o1expiredTimestamp == o2expiredTimestamp) {
+                                    return 0;
+                                }
+                                return o1expiredTimestamp > o2expiredTimestamp ? -1
+                                                                               : 1;
+                            }
+                            return 0;
+                        }
+                    });
+                    
+                    for (int i = 0; i < existedTokenCount; i++) {
+                        Token token = tokens.get(i);
+                        if (i < (maxAllowedTokenPerUser - 1)) {
+                            token.disable();
+                            tokenProvider.saveToken(token);
+                        }
+                        else {
+                            tokenProvider.revokeToken(token);
+                        }
+                        
+                    }
+                }
+                else {
+                    for (Token token : tokens) {
+                        token.disable();
+                        tokenProvider.saveToken(token);
+                    }
                 }
             }
         }

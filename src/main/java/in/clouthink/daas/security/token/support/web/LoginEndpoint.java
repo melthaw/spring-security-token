@@ -158,7 +158,7 @@ public class LoginEndpoint extends GenericFilterBean {
                          FilterChain chain) throws IOException,
                                             ServletException {
         try {
-            if (!"POST".equals(request.getMethod())) {
+            if (postOnly && !"POST".equals(request.getMethod())) {
                 throw new AuthenticationException("Authentication method not supported: "
                                                   + request.getMethod());
             }
