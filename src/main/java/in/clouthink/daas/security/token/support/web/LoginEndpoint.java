@@ -9,6 +9,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import in.clouthink.daas.security.token.exception.AuthenticationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
@@ -157,6 +158,11 @@ public class LoginEndpoint extends GenericFilterBean {
                          FilterChain chain) throws IOException,
                                             ServletException {
         try {
+            if (!"POST".equals(request.getMethod())) {
+                throw new AuthenticationException("Authentication method not supported: "
+                                                  + request.getMethod());
+            }
+            
             String username = obtainUsername(request);
             String password = obtainPassword(request);
             
@@ -212,8 +218,11 @@ public class LoginEndpoint extends GenericFilterBean {
     
     protected boolean isLoginMatched(HttpServletRequest request,
                                      HttpServletResponse response) {
-        return loginRequestMatcher.matches(request)
-               && "POST".equals(request.getMethod());
+        if (postOnly) {
+            return loginRequestMatcher.matches(request)
+                   && "POST".equals(request.getMethod());
+        }
+        return loginRequestMatcher.matches(request);
     }
     
     @Override
