@@ -364,4 +364,25 @@ And then you can access the protected url resource with the token in the http he
                                                                 HttpMethod.GET,
                                                                 request,
                                                                 String.class);   
-                                                                  
+
+
+# Appendix : error code explain 
+
+Error response format (JSON) for example:
+
+    {"message":"The token is disabled","succeed":false,"errorCode":"error.tokenIsDisabled"}
+    
+Explain
+    
+error code | error message | http status code | description
+-----------|-----------|-----------|-----------
+error.invalidUserOrPassword | Invalid username or password. |  |
+error.invalidTokenOrExpired | The session is invalid or expired. | |
+error.tokenIsDisabled |The token is disabled. | |
+error.userIsLocked | The user is locked. | | 
+error.userIsDisabled | The user is disabled. | |
+error.userIsExpired | The user is expired. | |
+error.authenticationRequired | Authentication required. | |
+error.authenticationFailed | Authentication failed. | |
+error.authorizationFailed | Authorization failed. | |
+error.noPermission | No permission.Access denied. | |
