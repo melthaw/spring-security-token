@@ -1,7 +1,6 @@
 package in.clouthink.daas.security.token.support.web;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -10,21 +9,17 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import in.clouthink.daas.security.token.repackage.org.springframework.security.crypto.codec.Base64;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import in.clouthink.daas.security.token.core.Authentication;
 import in.clouthink.daas.security.token.core.AuthenticationManager;
 import in.clouthink.daas.security.token.core.TokenAuthenticationRequest;
-import in.clouthink.daas.security.token.exception.AuthenticationRequiredException;
-import org.springframework.web.filter.OncePerRequestFilter;
+import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 
 public class LogoutEndpoint extends GenericFilterBean {
     
@@ -37,6 +32,10 @@ public class LogoutEndpoint extends GenericFilterBean {
     private RequestMatcher logoutRequestMatcher;
     
     private AuthenticationManager authenticationManager;
+    
+    private TokenResolver tokenResolver = new BearerAuthorizationHeaderTokenResolver();
+    
+    private boolean useStrict = true;
     
     /**
      *
@@ -85,11 +84,27 @@ public class LogoutEndpoint extends GenericFilterBean {
         this.authorizationFailureHandler = authorizationFailureHandler;
     }
     
+    public TokenResolver getTokenResolver() {
+        return tokenResolver;
+    }
+    
+    public void setTokenResolver(TokenResolver tokenResolver) {
+        this.tokenResolver = tokenResolver;
+    }
+    
+    public boolean isUseStrict() {
+        return useStrict;
+    }
+    
+    public void setUseStrict(boolean useStrict) {
+        this.useStrict = useStrict;
+    }
+    
     @Override
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
-                                                 IOException {
+                                                  IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isLogoutMatched(request, response)) {
@@ -103,32 +118,17 @@ public class LogoutEndpoint extends GenericFilterBean {
     private void doLogout(HttpServletRequest request,
                           HttpServletResponse response,
                           FilterChain chain) throws IOException,
-                                            ServletException {
+                                             ServletException {
         try {
-            String authHeader = request.getHeader("Authorization");
-            if (StringUtils.isEmpty(authHeader)) {
-                throw new AuthenticationRequiredException("Authorization header required");
-            }
-            
-            if (authHeader.length() <= HEADER_AUTHORIZATION_PREFIX.length()) {
-                throw new IllegalArgumentException("Unrecognized Authorization header.");
-            }
-            
-            String base64Final = authHeader.substring(HEADER_AUTHORIZATION_PREFIX.length());
-            String tokenValue = null;
-            try {
-                tokenValue = new String(Base64.decode(base64Final.getBytes("UTF-8")));
-            }
-            catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException("Unrecognized Authorization header.");
-            }
-            
+            String tokenValue = tokenResolver.resolve(request, response);
             Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
             authenticationManager.logout(authentication);
         }
         catch (Exception e) {
             logger.error(e, e);
-            authorizationFailureHandler.handle(request, response, e);
+            if (useStrict) {
+                authorizationFailureHandler.handle(request, response, e);
+            }
         }
     }
     
