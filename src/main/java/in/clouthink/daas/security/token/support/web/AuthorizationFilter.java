@@ -9,13 +9,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
-import in.clouthink.daas.security.token.support.SecurityUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
@@ -24,7 +19,9 @@ import in.clouthink.daas.security.token.core.Authentication;
 import in.clouthink.daas.security.token.core.AuthorizationManager;
 import in.clouthink.daas.security.token.core.acl.UrlAccessRequest;
 import in.clouthink.daas.security.token.exception.AuthenticationRequiredException;
-import org.springframework.web.filter.OncePerRequestFilter;
+import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
+import in.clouthink.daas.security.token.support.SecurityUtils;
 
 public class AuthorizationFilter extends GenericFilterBean {
     
@@ -37,6 +34,8 @@ public class AuthorizationFilter extends GenericFilterBean {
     private RequestMatcher ignoredUrlRequestMatcher;
     
     private AuthorizationManager authorizationManager;
+    
+    private boolean enableCors = false;
     
     /**
      *
@@ -91,14 +90,19 @@ public class AuthorizationFilter extends GenericFilterBean {
         this.authorizationFailureHandler = authorizationFailureHandler;
     }
     
+    public void setEnableCors(boolean enableCors) {
+        this.enableCors = enableCors;
+    }
+    
     @Override
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
-                                                 IOException {
+                                                  IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        if (isUrlProcessingMatched(request, response)) {
+        if (isUrlProcessingMatched(request, response)
+            && !isPreflightRequest(request)) {
             doAuthorization(request, response, chain);
         }
         else {
@@ -109,7 +113,7 @@ public class AuthorizationFilter extends GenericFilterBean {
     private void doAuthorization(HttpServletRequest request,
                                  HttpServletResponse response,
                                  FilterChain chain) throws IOException,
-                                                   ServletException {
+                                                    ServletException {
         try {
             Authentication authentication = SecurityUtils.currentAuthentication();
             if (authentication == null) {
@@ -153,6 +157,10 @@ public class AuthorizationFilter extends GenericFilterBean {
             }
         }
         return urlRequestMatcher.matches(request);
+    }
+    
+    private boolean isPreflightRequest(HttpServletRequest request) {
+        return enableCors && "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
     
     @Override
