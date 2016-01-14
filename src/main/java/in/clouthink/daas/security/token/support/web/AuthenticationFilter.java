@@ -29,6 +29,8 @@ public class AuthenticationFilter extends GenericFilterBean {
     
     private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
     
+    private boolean enableCors = false;
+    
     private RequestMatcher urlRequestMatcher;
     
     private RequestMatcher ignoredUrlRequestMatcher;
@@ -95,6 +97,10 @@ public class AuthenticationFilter extends GenericFilterBean {
         this.authenticationManager = authenticationManager;
     }
     
+    public void setEnableCors(boolean enableCors) {
+        this.enableCors = enableCors;
+    }
+    
     @Override
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
@@ -102,7 +108,8 @@ public class AuthenticationFilter extends GenericFilterBean {
                                                   IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        if (isUrlProcessingMatched(request, response)) {
+        if (isUrlProcessingMatched(request, response)
+            && !isPreflightRequest(request)) {
             doAuthentication(request, response, chain);
         }
         else {
@@ -128,6 +135,10 @@ public class AuthenticationFilter extends GenericFilterBean {
         finally {
             SecurityContextManager.clearContext();
         }
+    }
+    
+    private boolean isPreflightRequest(HttpServletRequest request) {
+        return enableCors && "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
     
     protected boolean isUrlProcessingMatched(HttpServletRequest request,
