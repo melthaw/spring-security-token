@@ -141,12 +141,13 @@ public class AuthorizationFilter extends GenericFilterBean {
             authorizationManager.authorize(new UrlAccessRequest(authentication,
                                                                 url,
                                                                 httpMethod));
-            chain.doFilter(request, response);
         }
         catch (Exception e) {
             logger.error(e, e);
             authorizationFailureHandler.handle(request, response, e);
+            return;
         }
+        chain.doFilter(request, response);
     }
     
     protected boolean isUrlProcessingMatched(HttpServletRequest request,

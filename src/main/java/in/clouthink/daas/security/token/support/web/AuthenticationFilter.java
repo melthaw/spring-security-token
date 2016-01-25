@@ -122,15 +122,17 @@ public class AuthenticationFilter extends GenericFilterBean {
                                   FilterChain chain) throws IOException,
                                                      ServletException {
         try {
-            String tokenValue = tokenResolver.resolve(request, response);
-            Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
-            SecurityContextManager.getContext()
-                                  .setAuthentication(authentication);
+            try {
+                String tokenValue = tokenResolver.resolve(request, response);
+                Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
+                SecurityContextManager.getContext()
+                                      .setAuthentication(authentication);
+            } catch (Exception e) {
+                logger.error(e, e);
+                authorizationFailureHandler.handle(request, response, e);
+                return;
+            }
             chain.doFilter(request, response);
-        }
-        catch (Exception e) {
-            logger.error(e, e);
-            authorizationFailureHandler.handle(request, response, e);
         }
         finally {
             SecurityContextManager.clearContext();
