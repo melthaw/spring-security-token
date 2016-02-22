@@ -3,7 +3,11 @@ package in.clouthink.daas.security.token.exception;
 /**
  */
 public abstract class ErrorConstants {
-    
+
+    public static final String USERNAME_REQUIRED = "error.usernameRequired";
+
+    public static final String PASSWORD_REQUIRED = "error.passwordRequired";
+
     public static final String INVALID_USER_OR_PASSWORD = "error.invalidUserOrPassword";
     
     public static final String INVALID_TOKEN_OR_EXPIRED = "error.invalidTokenOrExpired";
