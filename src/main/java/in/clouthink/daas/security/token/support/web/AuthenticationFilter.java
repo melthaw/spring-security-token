@@ -15,27 +15,23 @@ import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
 import in.clouthink.daas.security.token.core.Authentication;
-import in.clouthink.daas.security.token.core.AuthenticationManager;
 import in.clouthink.daas.security.token.core.SecurityContextManager;
-import in.clouthink.daas.security.token.core.TokenAuthenticationRequest;
+import in.clouthink.daas.security.token.exception.AuthenticationRequiredException;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 
+/**
+ * Only check the authentication is existed in context or not ,if not , the access is denied.
+ */
 public class AuthenticationFilter extends GenericFilterBean {
     
     private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
     
-    private TokenResolver tokenResolver = new BearerAuthorizationHeaderTokenResolver();
-    
     private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
-    
-    private boolean enableCors = false;
     
     private RequestMatcher urlRequestMatcher;
     
     private RequestMatcher ignoredUrlRequestMatcher;
-    
-    private AuthenticationManager authenticationManager;
     
     /**
      *
@@ -77,8 +73,14 @@ public class AuthenticationFilter extends GenericFilterBean {
         this.ignoredUrlRequestMatcher = ignoredUrlRequestMatcher;
     }
     
-    public void setTokenResolver(TokenResolver tokenResolver) {
-        this.tokenResolver = tokenResolver;
+    public void setExcludingProcessesUrl(String excludingFilterProcessesUrl) {
+        this.ignoredUrlRequestMatcher = new AntPathRequestMatcher(excludingFilterProcessesUrl);
+    }
+    
+    public void setExcludingUrlRequestMatcher(RequestMatcher excludingUrlRequestMatcher) {
+        Assert.notNull(excludingUrlRequestMatcher,
+                       "ignoredUrlRequestMatcher cannot be null");
+        this.ignoredUrlRequestMatcher = excludingUrlRequestMatcher;
     }
     
     public AuthorizationFailureHandler getAuthorizationFailureHandler() {
@@ -89,18 +91,6 @@ public class AuthenticationFilter extends GenericFilterBean {
         this.authorizationFailureHandler = authorizationFailureHandler;
     }
     
-    public AuthenticationManager getAuthenticationManager() {
-        return authenticationManager;
-    }
-    
-    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-        this.authenticationManager = authenticationManager;
-    }
-    
-    public void setEnableCors(boolean enableCors) {
-        this.enableCors = enableCors;
-    }
-    
     @Override
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
@@ -108,8 +98,7 @@ public class AuthenticationFilter extends GenericFilterBean {
                                                   IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        if (isUrlProcessingMatched(request, response)
-            && !isPreflightRequest(request)) {
+        if (isUrlProcessingMatched(request, response)) {
             doAuthentication(request, response, chain);
         }
         else {
@@ -122,41 +111,27 @@ public class AuthenticationFilter extends GenericFilterBean {
                                   FilterChain chain) throws IOException,
                                                      ServletException {
         try {
-            try {
-                String tokenValue = tokenResolver.resolve(request, response);
-                Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
-                SecurityContextManager.getContext()
-                                      .setAuthentication(authentication);
-            } catch (Exception e) {
-                logger.error(e, e);
-                authorizationFailureHandler.handle(request, response, e);
-                return;
+            Authentication authentication = SecurityContextManager.getContext()
+                                                                  .getAuthentication();
+            if (authentication == null) {
+                throw new AuthenticationRequiredException();
             }
-            chain.doFilter(request, response);
         }
-        finally {
-            SecurityContextManager.clearContext();
+        catch (Exception e) {
+            logger.error(e, e);
+            authorizationFailureHandler.handle(request, response, e);
+            return;
         }
-    }
-    
-    private boolean isPreflightRequest(HttpServletRequest request) {
-        return enableCors && "OPTIONS".equalsIgnoreCase(request.getMethod());
+        chain.doFilter(request, response);
     }
     
     protected boolean isUrlProcessingMatched(HttpServletRequest request,
                                              HttpServletResponse response) {
-        if (ignoredUrlRequestMatcher != null) {
-            if (ignoredUrlRequestMatcher.matches(request)) {
-                return false;
-            }
+        if (ignoredUrlRequestMatcher != null
+            && ignoredUrlRequestMatcher.matches(request)) {
+            return false;
         }
         return urlRequestMatcher.matches(request);
-    }
-    
-    @Override
-    public void afterPropertiesSet() {
-        Assert.notNull(authenticationManager,
-                       "authenticationManager must be specified");
     }
     
 }

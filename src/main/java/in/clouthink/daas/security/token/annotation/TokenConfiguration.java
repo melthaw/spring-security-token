@@ -78,31 +78,44 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     
     @Bean(name = DAAS_TOKEN_FILTER)
     @Autowired
-    public CompositeFilter daasTokenCompositeFilter(AuthenticationFilter authenticationFilter,
+    public CompositeFilter daasTokenCompositeFilter(PreAuthenticationFilter preAuthenticationFilter,
+                                                    AuthenticationFilter authenticationFilter,
                                                     AuthorizationFilter authorizationFilter,
                                                     LoginEndpoint loginEndpoint,
                                                     LogoutEndpoint logoutEndpoint) {
         List<Filter> filters = new ArrayList<Filter>();
+        tokenConfigurer.configure(preAuthenticationFilter);
         tokenConfigurer.configure(authenticationFilter);
         tokenConfigurer.configure(authorizationFilter);
         tokenConfigurer.configure(loginEndpoint);
         tokenConfigurer.configure(logoutEndpoint);
         filters.add(loginEndpoint);
         filters.add(logoutEndpoint);
+        filters.add(preAuthenticationFilter);
         filters.add(authenticationFilter);
         filters.add(authorizationFilter);
         CompositeFilter result = new CompositeFilter();
         result.setFilters(filters);
         return result;
     }
-    
+
+    @Bean
+    @Autowired
+    @DependsOn("daasDefaultAuthenticationManager")
+    public PreAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
+                                                              MessageProvider messageProvider) {
+        PreAuthenticationFilter result = new PreAuthenticationFilter();
+        result.setAuthenticationManager(authenticationManager);
+        result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+        return result;
+    }
+
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthenticationManager")
     public AuthenticationFilter daasTokenAuthenticationFilter(AuthenticationManager authenticationManager,
                                                               MessageProvider messageProvider) {
         AuthenticationFilter result = new AuthenticationFilter();
-        result.setAuthenticationManager(authenticationManager);
         result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
         return result;
     }

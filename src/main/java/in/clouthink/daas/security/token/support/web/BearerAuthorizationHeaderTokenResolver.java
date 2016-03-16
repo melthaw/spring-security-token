@@ -1,12 +1,13 @@
 package in.clouthink.daas.security.token.support.web;
 
-import in.clouthink.daas.security.token.exception.AuthenticationRequiredException;
-import in.clouthink.daas.security.token.repackage.org.springframework.security.crypto.codec.Base64;
-import org.springframework.util.StringUtils;
+import java.io.UnsupportedEncodingException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
+
+import org.springframework.util.StringUtils;
+
+import in.clouthink.daas.security.token.repackage.org.springframework.security.crypto.codec.Base64;
 
 /**
  * Created by LiangBin on 15/11/29.
@@ -20,7 +21,7 @@ public class BearerAuthorizationHeaderTokenResolver implements TokenResolver {
                           HttpServletResponse response) {
         String authHeader = request.getHeader("Authorization");
         if (StringUtils.isEmpty(authHeader)) {
-            throw new AuthenticationRequiredException();
+            return null;
         }
         
         if (authHeader.length() <= HEADER_AUTHORIZATION_PREFIX.length()) {
@@ -28,15 +29,12 @@ public class BearerAuthorizationHeaderTokenResolver implements TokenResolver {
         }
         
         String base64Final = authHeader.substring(HEADER_AUTHORIZATION_PREFIX.length());
-        String tokenValue = null;
         try {
-            tokenValue = new String(Base64.decode(base64Final.getBytes("UTF-8")));
+            return new String(Base64.decode(base64Final.getBytes("UTF-8")));
         }
         catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Unrecognized Authorization header.");
         }
-        
-        return tokenValue;
     }
     
 }
