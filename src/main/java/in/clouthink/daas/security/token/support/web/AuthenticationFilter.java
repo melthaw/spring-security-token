@@ -21,13 +21,16 @@ import in.clouthink.daas.security.token.repackage.org.springframework.security.w
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 
 /**
- * Only check the authentication is existed in context or not ,if not , the access is denied.
+ * Only check the authentication is existed in context or not ,if not , the
+ * access is denied.
  */
 public class AuthenticationFilter extends GenericFilterBean {
     
     private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
     
     private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
+    
+    private boolean corsEnabled = false;
     
     private RequestMatcher urlRequestMatcher;
     
@@ -52,6 +55,10 @@ public class AuthenticationFilter extends GenericFilterBean {
      */
     public AuthenticationFilter(RequestMatcher urlRequestMatcher) {
         this.urlRequestMatcher = urlRequestMatcher;
+    }
+    
+    public void setCorsEnabled(boolean corsEnabled) {
+        this.corsEnabled = corsEnabled;
     }
     
     public void setProcessesUrl(String filterProcessesUrl) {
@@ -128,10 +135,15 @@ public class AuthenticationFilter extends GenericFilterBean {
     protected boolean isUrlProcessingMatched(HttpServletRequest request,
                                              HttpServletResponse response) {
         if (ignoredUrlRequestMatcher != null
-            && ignoredUrlRequestMatcher.matches(request)) {
+            && ignoredUrlRequestMatcher.matches(request)
+            && !isPreflightRequest(request)) {
             return false;
         }
         return urlRequestMatcher.matches(request);
+    }
+    
+    private boolean isPreflightRequest(HttpServletRequest request) {
+        return corsEnabled && "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
     
 }
