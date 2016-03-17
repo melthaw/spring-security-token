@@ -6,7 +6,7 @@
 
     <groupId>in.clouthink.daas</groupId>
     <artifactId>daas-token</artifactId>
-    <version>1.4.4-snapshot</version>
+    <version>1.4.4</version>
     <packaging>jar</packaging>
     <name>daas-token</name>
     <url>http://clouthink.in</url>

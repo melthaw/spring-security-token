@@ -35,7 +35,7 @@ public class AuthorizationFilter extends GenericFilterBean {
     
     private AuthorizationManager authorizationManager;
     
-    private boolean enableCors = false;
+    private boolean corsEnabled = false;
     
     /**
      *
@@ -90,8 +90,8 @@ public class AuthorizationFilter extends GenericFilterBean {
         this.authorizationFailureHandler = authorizationFailureHandler;
     }
     
-    public void setEnableCors(boolean enableCors) {
-        this.enableCors = enableCors;
+    public void setCorsEnabled(boolean corsEnabled) {
+        this.corsEnabled = corsEnabled;
     }
     
     @Override
@@ -161,7 +161,7 @@ public class AuthorizationFilter extends GenericFilterBean {
     }
     
     private boolean isPreflightRequest(HttpServletRequest request) {
-        return enableCors && "OPTIONS".equalsIgnoreCase(request.getMethod());
+        return corsEnabled && "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
     
     @Override

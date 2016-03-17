@@ -105,7 +105,8 @@ public class AuthenticationFilter extends GenericFilterBean {
                                                   IOException {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
-        if (isUrlProcessingMatched(request, response)) {
+        if (isUrlProcessingMatched(request, response)
+            && !isPreflightRequest(request)) {
             doAuthentication(request, response, chain);
         }
         else {
@@ -135,8 +136,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     protected boolean isUrlProcessingMatched(HttpServletRequest request,
                                              HttpServletResponse response) {
         if (ignoredUrlRequestMatcher != null
-            && ignoredUrlRequestMatcher.matches(request)
-            && !isPreflightRequest(request)) {
+            && ignoredUrlRequestMatcher.matches(request)) {
             return false;
         }
         return urlRequestMatcher.matches(request);
