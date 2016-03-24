@@ -9,7 +9,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import in.clouthink.daas.security.token.exception.AuthenticationException;
+import in.clouthink.daas.security.token.spi.PreLoginHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.Assert;
@@ -18,6 +18,7 @@ import org.springframework.web.filter.GenericFilterBean;
 import in.clouthink.daas.security.token.core.Authentication;
 import in.clouthink.daas.security.token.core.AuthenticationManager;
 import in.clouthink.daas.security.token.core.UsernamePasswordAuthenticationRequest;
+import in.clouthink.daas.security.token.exception.AuthenticationException;
 import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
@@ -46,6 +47,8 @@ public class LoginEndpoint extends GenericFilterBean {
     private AuthenticationManager authenticationManager;
     
     private AuditCallback auditCallback;
+    
+    private PreLoginHandler preLoginHandler;
     
     /**
      *
@@ -138,6 +141,14 @@ public class LoginEndpoint extends GenericFilterBean {
         this.auditCallback = auditCallback;
     }
     
+    public PreLoginHandler getPreLoginHandler() {
+        return preLoginHandler;
+    }
+    
+    public void setPreLoginHandler(PreLoginHandler preLoginHandler) {
+        this.preLoginHandler = preLoginHandler;
+    }
+    
     @Override
     public final void doFilter(ServletRequest req,
                                ServletResponse res,
@@ -161,6 +172,10 @@ public class LoginEndpoint extends GenericFilterBean {
             if (postOnly && !"POST".equals(request.getMethod())) {
                 throw new AuthenticationException("Authentication method not supported: "
                                                   + request.getMethod());
+            }
+            
+            if (preLoginHandler != null) {
+                preLoginHandler.handle(request, response);
             }
             
             String username = obtainUsername(request);

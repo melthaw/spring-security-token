@@ -11,11 +11,11 @@ public interface AuditCallback {
      * @param request
      * @param isAuthenticated
      */
-    public void auditLogin(HttpServletRequest request, boolean isAuthenticated);
+    void auditLogin(HttpServletRequest request, boolean isAuthenticated);
     
     /**
      * @param request
      */
-    public void auditLogout(HttpServletRequest request);
+    void auditLogout(HttpServletRequest request);
     
 }
