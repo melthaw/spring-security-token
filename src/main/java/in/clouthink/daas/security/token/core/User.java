@@ -5,18 +5,18 @@ import java.util.List;
 
 public interface User extends Serializable {
     
-    public String getId();
+    String getId();
     
-    public String getUsername();
+    String getUsername();
     
-    public String getPassword();
+    String getPassword();
     
-    public boolean isEnabled();
+    boolean isEnabled();
     
-    public boolean isExpired();
+    boolean isExpired();
     
-    public boolean isLocked();
+    boolean isLocked();
     
-    public List<Role> getRoles();
+    List<Role> getRoles();
     
 }

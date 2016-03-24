@@ -4,6 +4,6 @@ import java.io.Serializable;
 
 public interface Authentication extends Serializable {
     
-    public Token currentToken();
+    Token currentToken();
     
 }

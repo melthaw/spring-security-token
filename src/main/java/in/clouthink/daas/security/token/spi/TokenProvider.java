@@ -7,12 +7,12 @@ import java.util.List;
 
 public interface TokenProvider<T extends Token> {
     
-    public void saveToken(T token);
+    void saveToken(T token);
     
-    public T findByToken(String token);
+    T findByToken(String token);
     
-    public void revokeToken(T token);
+    void revokeToken(T token);
     
-    public List<T> findByUser(User user);
+    List<T> findByUser(User user);
     
 }

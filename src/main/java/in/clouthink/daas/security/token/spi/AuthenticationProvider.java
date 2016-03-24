@@ -7,10 +7,10 @@ import in.clouthink.daas.security.token.core.AuthenticationRequest;
  */
 public interface AuthenticationProvider<T extends AuthenticationRequest> {
     
-    public boolean supports(AuthenticationRequest request);
+    boolean supports(AuthenticationRequest request);
     
-    public Authentication authenticate(T t);
+    Authentication authenticate(T t);
     
-    public void revoke(Authentication authentication);
+    void revoke(Authentication authentication);
     
 }

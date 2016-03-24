@@ -18,8 +18,8 @@ public interface DigestMetadataProvider<T extends User> {
         }
     };
     
-    public String getDigestAlgorithm(T user);
+    String getDigestAlgorithm(T user);
     
-    public String getSalt(T user);
+    String getSalt(T user);
     
 }

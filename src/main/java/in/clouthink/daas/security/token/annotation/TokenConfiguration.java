@@ -6,6 +6,9 @@ import java.util.List;
 
 import javax.servlet.Filter;
 
+import in.clouthink.daas.security.token.federation.DefaultFederationService;
+import in.clouthink.daas.security.token.federation.FederationService;
+import in.clouthink.daas.security.token.spi.impl.SimpleFederationProvider;
 import in.clouthink.daas.security.token.support.i18n.DefaultMessageProvider;
 import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import in.clouthink.daas.security.token.support.web.*;
@@ -73,7 +76,8 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
         this.enableToken = AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(EnableToken.class.getName(),
                                                                                                false));
         Assert.notNull(this.enableToken,
-                       "@EnableJwt is not present on importing class " + importMetadata.getClassName());
+                       "@EnableJwt is not present on importing class "
+                                         + importMetadata.getClassName());
     }
     
     @Bean(name = DAAS_TOKEN_FILTER)
@@ -98,18 +102,18 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
         result.setFilters(filters);
         return result;
     }
-
+    
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthenticationManager")
     public PreAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
-                                                              MessageProvider messageProvider) {
+                                                                    MessageProvider messageProvider) {
         PreAuthenticationFilter result = new PreAuthenticationFilter();
         result.setAuthenticationManager(authenticationManager);
         result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
         return result;
     }
-
+    
     @Bean
     @Autowired
     @DependsOn("daasDefaultAuthenticationManager")
@@ -156,12 +160,25 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Bean
     @Autowired
     @DependsOn({ "daasUsernamePasswordAuthenticationProvider",
-                "daasTokenAuthenticationProvider" })
+                 "daasTokenAuthenticationProvider" })
     public AuthenticationManager daasDefaultAuthenticationManager(IdentityProvider identityProvider,
                                                                   TokenManager tokenManager) {
         DefaultAuthenticationManager result = new DefaultAuthenticationManager();
         result.addProvider(daasUsernamePasswordAuthenticationProvider(identityProvider,
                                                                       tokenManager));
+        result.addProvider(daasTokenAuthenticationProvider(identityProvider,
+                                                           tokenManager));
+        return result;
+    }
+    
+    @Bean
+    @Autowired
+    @DependsOn({ "daasSimpleFederationProvider",
+                 "daasTokenAuthenticationProvider" })
+    public FederationService daasDefaultFederationService(IdentityProvider identityProvider,
+                                                          TokenManager tokenManager) {
+        DefaultFederationService result = new DefaultFederationService();
+        result.addProvider(daasSimpleFederationProvider(tokenManager));
         result.addProvider(daasTokenAuthenticationProvider(identityProvider,
                                                            tokenManager));
         return result;
@@ -181,6 +198,14 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
                                                                              TokenManager tokenManager) {
         UsernamePasswordAuthenticationProvider result = new UsernamePasswordAuthenticationProvider();
         result.setIdentityProvider(identityProvider);
+        result.setTokenManager(tokenManager);
+        return result;
+    }
+    
+    @Bean
+    @Autowired
+    public FederationProvider daasSimpleFederationProvider(TokenManager tokenManager) {
+        SimpleFederationProvider result = new SimpleFederationProvider();
         result.setTokenManager(tokenManager);
         return result;
     }

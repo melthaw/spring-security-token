@@ -7,6 +7,6 @@ import in.clouthink.daas.security.token.core.acl.AccessResponse;
  */
 public interface AuthorizationProvider<T extends AccessRequest> {
     
-    public AccessResponse authorize(T accessRequest);
+    AccessResponse authorize(T accessRequest);
     
 }
