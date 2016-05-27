@@ -107,4 +107,14 @@ public class TokenEntity implements Token {
         this.enabled = false;
     }
 
+    @Override
+    public String toString() {
+        return "TokenEntity{" +
+               "token='" + token + '\'' +
+               ", owner=" + owner +
+               ", expiredDate=" + expiredDate +
+               ", latestTime=" + latestTime +
+               ", enabled=" + enabled +
+               '}';
+    }
 }

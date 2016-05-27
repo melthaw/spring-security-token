@@ -1,53 +1,53 @@
-# Introduction
+# introduction
 
-Sometimes we only need a simple token based security framework to protect the rest API. Obviously we like Spring Framework but Spring Security is too heavy to us.
-It's possible to extends the Spring Security to match our requirement, but that means we have to pay the cost for the over-designed filter chain at the runtime.
-Daas-Token is designed to reduce down the filters in the chain ,abandon the complicated structure , and try to make it simple , make it easy to understand.
+sometimes we only need a simple token based security framework to protect the rest api. obviously we like spring framework but spring security is too heavy to us.
+it's possible to extends the spring security to match our requirement, but that means we have to pay the cost for the over-designed filter chain at the runtime.
+daas-token is designed to reduce down the filters in the chain ,abandon the complicated structure , and try to make it simple , make it easy to understand.
 
-We are still the heavy users of Spring Framework , so when we decide to develop the Daas-Token security framework , we only consider to support the Spring Framework without any hesitation.
+we are still the heavy users of spring framework , so when we decide to develop the daas-token security framework , we only consider to support the spring framework without any hesitation.
 
-Thanks Spring Security. There are some useful APIs available for us in Spring Security , but we don't like to depend on the fully JARS , so we re-package them under the following package.
+thanks spring security. there are some useful apis available for us in spring security , but we don't like to depend on the fully jars , so we re-package them under the following package.
 > in.clouthink.daas.security.token.repackage.org.springframework.security
 
-# Dependencies
+# dependencies
 
-* Spring Framework 3.2.x (Core & Web Required)
-* Spring Data Redis (Optional)
-* Spring Data Mongodb (Optional)
-* Spymemcached (Optional)
+* spring framework 3.2.x (core & web required)
+* spring data redis (optional)
+* spring data mongodb (optional)
+* spymemcached (optional)
 
-# Usage
+# usage
 
-## Maven
+## maven
 
-So far 1.4.4 is available 
+so far 1.5.0 is available 
 
     <dependency>
-        <groupId>in.clouthink.daas</groupId>
-        <artifactId>daas-token</artifactId>
+        <groupid>in.clouthink.daas</groupid>
+        <artifactid>daas-token</artifactid>
         <version>${daas.token.version}</version>
     </dependency>
 
-## Spring Configuration
+## spring configuration
 
-Use `@EnableToken` to get started 
+use `@enabletoken` to get started 
 
-    @Configuration
-    @EnableToken
-    public class Application {}
+    @configuration
+    @enabletoken
+    public class application {}
 
  
-By default, the JVM memory-based token management is working for Daas-Token, `@Scheduled(cron = "0 0/10 * * * ?")` is triggered every 10 minutes to clean up the expired token. 
-So please enable the spring schedule feature if you does not change the default configuration.Otherwise , **out of memory** should be a big problem.
+by default, the jvm memory-based token management is working for daas-token, `@scheduled(cron = "0 0/10 * * * ?")` is triggered every 10 minutes to clean up the expired token. 
+so please enable the spring schedule feature if you does not change the default configuration.otherwise , **out of memory** should be a big problem.
 
-    @Configuration
-    @EnableScheduling
-    @EnableToken
-    public class Application {}
+    @configuration
+    @enablescheduling
+    @enabletoken
+    public class application {}
 
-## Customize
+## customize
 
-Implement the interface `TokenConfigurer` to customize the Daas-Token features
+implement the interface `tokenconfigurer` to customize the daas-token features
 
 * login url 
 * logout url
@@ -56,106 +56,106 @@ Implement the interface `TokenConfigurer` to customize the Daas-Token features
 * token alive timeout
 * access control list
 
-Here is the sample 
+here is the sample 
 
-    @Bean
-    public TokenConfigurer myTokenConfigurer() {
-        //TODO:create and return the TokenConfigurer instance here.
+    @bean
+    public tokenconfigurer mytokenconfigurer() {
+        //todo:create and return the tokenconfigurer instance here.
     }
 
-Or you can extend the stub class `TokenConfigurerAdapter` which has been supply the empty implementation for `TokenConfigurer`,
+or you can extend the stub class `tokenconfigureradapter` which has been supply the empty implementation for `tokenconfigurer`,
 just override the methods you'd like to.
 
-For example , we'd like to let the token only be alive for one hour.
+for example , we'd like to let the token only be alive for one hour.
 
-    @Bean
-    public TokenConfigurer myTokenConfigurer() {
-        return new TokenConfigurerAdapter() {
-            @Override
-            public void configure(TokenLife tokenLife) {
-                tokenLife.setTokenTimeout(60 * 60 * 1000);
+    @bean
+    public tokenconfigurer mytokenconfigurer() {
+        return new tokenconfigureradapter() {
+            @override
+            public void configure(tokenlife tokenlife) {
+                tokenlife.settokentimeout(60 * 60 * 1000);
             }
         }
     }
 
-Set the login process url:
+set the login process url:
 
-    @Bean
-    public TokenConfigurer myTokenConfigurer() {
-        return new TokenConfigurerAdapter() {
-            @Override
-            public void configure(LoginEndpoint endpoint) {
-                endpoint.setLoginProcessesUrl("/login");
+    @bean
+    public tokenconfigurer mytokenconfigurer() {
+        return new tokenconfigureradapter() {
+            @override
+            public void configure(loginendpoint endpoint) {
+                endpoint.setloginprocessesurl("/login");
             }
         }
     }
     
 
-Set the logout process url:
+set the logout process url:
 
-    @Bean
-    public TokenConfigurer myTokenConfigurer() {
-        return new TokenConfigurerAdapter() {
-            @Override
-            public void configure(LogoutEndpoint endpoint) {
-                endpoint.setLogoutProcessesUrl("/logout");
+    @bean
+    public tokenconfigurer mytokenconfigurer() {
+        return new tokenconfigureradapter() {
+            @override
+            public void configure(logoutendpoint endpoint) {
+                endpoint.setlogoutprocessesurl("/logout");
             }
         }
     }
 
-Set the protected rest url:
+set the protected rest url:
 
-    @Bean
-    public TokenConfigurer myTokenConfigurer() {
-        return new TokenConfigurerAdapter() {
+    @bean
+    public tokenconfigurer mytokenconfigurer() {
+        return new tokenconfigureradapter() {
 
-            @Override
-            public void configure(AuthenticationFilter filter) {
-                filter.setProcessesUrl("/protected**");
+            @override
+            public void configure(authenticationfilter filter) {
+                filter.setprocessesurl("/protected**");
             }
 
-            @Override
-            public void configure(AuthorizationFilter filter) {
-                filter.setProcessesUrl("/protected**");
+            @override
+            public void configure(authorizationfilter filter) {
+                filter.setprocessesurl("/protected**");
             }
             
         }
     }
  
-The AuthenticationFilter is responsible to judge whether is user is authenticated or not.
-And the AuthorizationFilter is responsible to decide whether the user is allowed to access the protected url.
-Normally, keep the process url of the two filters be the same value.
+the authenticationfilter is responsible to judge whether is user is authenticated or not.
+and the authorizationfilter is responsible to decide whether the user is allowed to access the protected url.
+normally, keep the process url of the two filters be the same value.
 
-Now here goes to the step to define the ACL which is designed as RBAC , but not only RBAC. 
-Url Acl is designed into three parts
+now here goes to the step to define the acl which is designed as rbac , but not only rbac. 
+url acl is designed into three parts
 
-* URL  
- The http url (support regex and ant path)
-* Http Method  
-the http method (support GET , PUT, POST and DELETE)
-* Grant Rule  
+* url  
+ the http url (support regex and ant path)
+* http method  
+the http method (support get , put, post and delete)
+* grant rule  
 the user access is granted if the request is matching the rules
 
-The Grant Rule is defined as expression, now we support the following two format :
+the grant rule is defined as expression, now we support the following two format :
 
-* ROLE:`XXX`  
- XXX should be the role name (`Role#getName()`)
-* USERNAME:`XXX`  
- XXX should be the user name (`User#getUsername()`)
+* role:`xxx`  
+ xxx should be the role name (`role#getname()`)
+* username:`xxx`  
+ xxx should be the user name (`user#getusername()`)
 
-For example:
-The user which's username is **TESTUSER** or owns the Role **TEST** can access the **/token/sample/helloworld** with the http **GET** method
+for example:
+the user which's username is **testuser** or owns the role **test** can access the **/token/sample/helloworld** with the http **get** method
 
-    @Bean
-    public TokenConfigurer myTokenConfigurer() {
-        return new TokenConfigurerAdapter() {
+    @bean
+    public tokenconfigurer mytokenconfigurer() {
+        return new tokenconfigureradapter() {
 
-            @Override
-            public void configure(UrlAclProviderBuilder builder) {
-                builder.add(UrlAclBuilder.antPathBuilder()
+            @override
+            public void configure(urlaclproviderbuilder builder) {
+                builder.add(urlaclbuilder.antpathbuilder()
                                          .url("/token/sample/helloworld")
-                                         .httpMethods(HttpMethod.GET)
-                                         .grantRules("ROLE:TEST,USERNAME:TESTUSER"));
+                                         .httpmethods(httpmethod.get)
+                                         .grantrules("role:test,username:testuser"));
             }
             
         }
@@ -163,226 +163,226 @@ The user which's username is **TESTUSER** or owns the Role **TEST** can access t
              
              
 
-## Redis 
+## redis 
 
-As mentioned before, the JVM memory based token management is used by default, but we supplied the redis based token management, here is the way to enable the feature.
+as mentioned before, the jvm memory based token management is used by default, but we supplied the redis based token management, here is the way to enable the feature.
 
-First, enabled the spring data redis feature as follow:
+first, enabled the spring data redis feature as follow:
 
-    @Value("${redis.host}")
-    private String redisHost;
+    @value("${redis.host}")
+    private string redishost;
     
-    @Value("${redis.port}")
-    private int redisPort;
+    @value("${redis.port}")
+    private int redisport;
     
-    @Bean
-    public RedisConnectionFactory jedisConnectionFactory() {
-        RedisConnectionFactory result = new JedisConnectionFactory(new JedisShardInfo(redisHost,
-                                                                                      redisPort));
+    @bean
+    public redisconnectionfactory jedisconnectionfactory() {
+        redisconnectionfactory result = new jedisconnectionfactory(new jedisshardinfo(redishost,
+                                                                                      redisport));
         return result;
     }
     
-    @Bean
-    public RedisTemplate redisTemplate() {
-        RedisTemplate result = new RedisTemplate();
-        result.setConnectionFactory(jedisConnectionFactory());
-        result.setKeySerializer(new StringRedisSerializer(Charset.forName("UTF-8")));
+    @bean
+    public redistemplate redistemplate() {
+        redistemplate result = new redistemplate();
+        result.setconnectionfactory(jedisconnectionfactory());
+        result.setkeyserializer(new stringredisserializer(charset.forname("utf-8")));
         return result;
     }
      
-Then create the bean `in.clouthink.daas.security.token.spi.impl.redis.TokenProviderRedisImpl`.Please remember to add `@Primary` annotation with `@Bean`,
+then create the bean `in.clouthink.daas.security.token.spi.impl.redis.tokenproviderredisimpl`.please remember to add `@primary` annotation with `@bean`,
 it will take the place of the default implementation
 
-    @Primary
-    @Bean
-    public TokenProvider redisTokenProvider1() {
-        return new TokenProviderRedisImpl();
+    @primary
+    @bean
+    public tokenprovider redistokenprovider1() {
+        return new tokenproviderredisimpl();
     }
 
 
-## Memcached
+## memcached
 
-Same as the way of redis token management, using memcached as the token store is easy to configure. We use the [https://github.com/couchbase/spymemcached](spymemcached) as the memcached java client.
+same as the way of redis token management, using memcached as the token store is easy to configure. we use the [https://github.com/couchbase/spymemcached](spymemcached) as the memcached java client.
     
-    @Value("${memcached.host}")
-    private String memcachedHost;
+    @value("${memcached.host}")
+    private string memcachedhost;
     
-    @Value("${memcached.port}")
-    private int memcachedPort;
+    @value("${memcached.port}")
+    private int memcachedport;
     
-    @Bean
-    public MemcachedClientFactoryBean memcachedClientFactoryBean() {
-        MemcachedClientFactoryBean result = new MemcachedClientFactoryBean();
-        result.setServers(memcachedHost + ":" + memcachedPort);
+    @bean
+    public memcachedclientfactorybean memcachedclientfactorybean() {
+        memcachedclientfactorybean result = new memcachedclientfactorybean();
+        result.setservers(memcachedhost + ":" + memcachedport);
         return result;
     }
 
-Then create the bean `in.clouthink.daas.security.token.spi.impl.memcached.TokenProviderMemcachedImpl`.Please remember to add `@Primary` annotation with `@Bean`,
+then create the bean `in.clouthink.daas.security.token.spi.impl.memcached.tokenprovidermemcachedimpl`.please remember to add `@primary` annotation with `@bean`,
 it will take the place of the default implementation
 
-    @Primary
-    @Bean
-    public TokenProvider memcachedTokenProvider() {
-        return new TokenProviderMemcachedImpl();
+    @primary
+    @bean
+    public tokenprovider memcachedtokenprovider() {
+        return new tokenprovidermemcachedimpl();
     }
 
 
-## Mongodb
+## mongodb
 
-Mongodb is one of the most popular nosql data store , we support to save the token back to mongodb , here is the configuration
+mongodb is one of the most popular nosql data store , we support to save the token back to mongodb , here is the configuration
 
-    @Value("${mongodb.host}")
-    private String mongodbHost;
+    @value("${mongodb.host}")
+    private string mongodbhost;
     
-    @Value("${mongodb.port}")
-    private int mongodbPort;
+    @value("${mongodb.port}")
+    private int mongodbport;
     
-    @Value("${mongodb.database}")
-    private String mongodbDatabase;
+    @value("${mongodb.database}")
+    private string mongodbdatabase;
     
-    @Bean
-    public MongoDbFactory mongoDbFactory() throws Exception {
-        return new SimpleMongoDbFactory(new MongoClient(mongodbHost,
-                                                        mongodbPort),
-                                        mongodbDatabase);
+    @bean
+    public mongodbfactory mongodbfactory() throws exception {
+        return new simplemongodbfactory(new mongoclient(mongodbhost,
+                                                        mongodbport),
+                                        mongodbdatabase);
     }
     
-    @Bean
-    public MongoTemplate mongoTemplate() throws Exception {
-        return new MongoTemplate(mongoDbFactory());
+    @bean
+    public mongotemplate mongotemplate() throws exception {
+        return new mongotemplate(mongodbfactory());
     }
 
 
-Then create the bean `in.clouthink.daas.security.token.spi.impl.mongodb.TokenProviderMongodbImpl`.Please remember to add `@Primary` annotation with `@Bean`,
+then create the bean `in.clouthink.daas.security.token.spi.impl.mongodb.tokenprovidermongodbimpl`.please remember to add `@primary` annotation with `@bean`,
 it will take the place of the default implementation
     
-    @Primary
-    @Bean
-    public TokenProvider mongodbTokenProvider1() {
-        return new TokenProviderMongodbImpl();
+    @primary
+    @bean
+    public tokenprovider mongodbtokenprovider1() {
+        return new tokenprovidermongodbimpl();
     }
 
 
-## Composite memcached and mongodb
+## composite memcached and mongodb
 
-Redis is good choose to make the data cache-able and persist-able, but you can composite the memcached and mongodb together to achieve this target.
-It's very easy to configure DaaS-Token to support this feature.Create the bean `in.clouthink.daas.security.token.spi.impl.CompositeTokenProvider` and
-add `@Primary` annotation to the compositeTokenProvider.
+redis is good choose to make the data cache-able and persist-able, but you can composite the memcached and mongodb together to achieve this target.
+it's very easy to configure daas-token to support this feature.create the bean `in.clouthink.daas.security.token.spi.impl.compositetokenprovider` and
+add `@primary` annotation to the compositetokenprovider.
 
-    @Bean
-    public TokenProvider memcachedTokenProvider() {
-        return new TokenProviderMemcachedImpl();
+    @bean
+    public tokenprovider memcachedtokenprovider() {
+        return new tokenprovidermemcachedimpl();
     }
     
-    @Bean
-    public TokenProvider mongodbTokenProvider1() {
-        return new TokenProviderMongodbImpl();
+    @bean
+    public tokenprovider mongodbtokenprovider1() {
+        return new tokenprovidermongodbimpl();
     }
     
-    @Primary
-    @Bean
-    public TokenProvider compositeTokenProvider() {
-        return new CompositeTokenProvider(memcachedTokenProvider(), mongodbTokenProvider1());
+    @primary
+    @bean
+    public tokenprovider compositetokenprovider() {
+        return new compositetokenprovider(memcachedtokenprovider(), mongodbtokenprovider1());
     }
     
 
 
 
-## Advanced 
+## advanced 
 
-### Performace
+### performace
 
-Daas-Token is one light-weighted security framework but it doesn't mean we will sacrifice the performance to exchange the simple usage.
-The SPI is available for the advanced user to adapt their own implementation, even we have supported the Memcached, Redis and Mongodb out of the box.
+daas-token is one light-weighted security framework but it doesn't mean we will sacrifice the performance to exchange the simple usage.
+the spi is available for the advanced user to adapt their own implementation, even we have supported the memcached, redis and mongodb out of the box.
 
-Just supply your implementation
+just supply your implementation
 
-    public interface TokenProvider<T extends Token> {
+    public interface tokenprovider<t extends token> {
         
-        public void saveToken(T token);
+        public void savetoken(t token);
         
-        public T findByToken(String token);
+        public t findbytoken(string token);
         
-        public void revokeToken(T token);
-        
-    }
-
-### Customize the authorization
-
-Maybe you'd like to save the access control list back to the data store , and want to authorize the access request based on the dynamic data not hard-coded configuration.
-The SPI supplies the extension point if you want customize the authorization behaviors.
-
-    public interface AclProvider<T extends Acl> {
-        
-        public List<T> listAll();
+        public void revoketoken(t token);
         
     }
 
+### customize the authorization
 
-    public interface AccessRequestVoter<T extends AccessRequest> {
+maybe you'd like to save the access control list back to the data store , and want to authorize the access request based on the dynamic data not hard-coded configuration.
+the spi supplies the extension point if you want customize the authorization behaviors.
+
+    public interface aclprovider<t extends acl> {
         
-        public AccessResponse vote(T t, String grantRule);
+        public list<t> listall();
+        
+    }
+
+
+    public interface accessrequestvoter<t extends accessrequest> {
+        
+        public accessresponse vote(t t, string grantrule);
         
     }
     
-Please refer to the default implementations by DaaS-Token
+please refer to the default implementations by daas-token
     
-* in.clouthink.daas.security.token.spi.impl.DefaultUrlAclProvider
-* in.clouthink.daas.security.token.core.acl.AccessRequestRoleVoter
-* in.clouthink.daas.security.token.core.acl.AccessRequestUserVoter
+* in.clouthink.daas.security.token.spi.impl.defaulturlaclprovider
+* in.clouthink.daas.security.token.core.acl.accessrequestrolevoter
+* in.clouthink.daas.security.token.core.acl.accessrequestuservoter
 
 
-### Java Client
+### java client
 
-Once the user passed the authentication , the token response is sent back to the user. 
-And then you can access the protected url resource with the token in the http header.
+once the user passed the authentication , the token response is sent back to the user. 
+and then you can access the protected url resource with the token in the http header.
 
-    MultiValueMap<String, String> bodyMap = new LinkedMultiValueMap<String, String>();
-    bodyMap.add("username", "your username");
-    bodyMap.add("password", "your password");
+    multivaluemap<string, string> bodymap = new linkedmultivaluemap<string, string>();
+    bodymap.add("username", "your username");
+    bodymap.add("password", "your password");
     
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    httpheaders headers = new httpheaders();
+    headers.setcontenttype(mediatype.application_form_urlencoded);
     
-    HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<MultiValueMap<String, String>>(bodyMap,
+    httpentity<multivaluemap<string, string>> request = new httpentity<multivaluemap<string, string>>(bodymap,
                                                                                                       headers);
     
-    Map result = new RestTemplate().postForObject("http://127.0.0.1/login",
+    map result = new resttemplate().postforobject("http://127.0.0.1/login",
                                                   request,
-                                                  Map.class);
+                                                  map.class);
                                                   
-    String token = (String) ((Map) result.get("data")).get("token");                            
+    string token = (string) ((map) result.get("data")).get("token");                            
                               
-    HttpHeaders headers = new HttpHeaders();
-    String bearer = new String(Base64.encode(token.getBytes("UTF-8")),
-                               "UTF-8");
-    headers.set("Authorization", "Bearer " + bearer);
+    httpheaders headers = new httpheaders();
+    string bearer = new string(base64.encode(token.getbytes("utf-8")),
+                               "utf-8");
+    headers.set("authorization", "bearer " + bearer);
     
-    HttpEntity request = new HttpEntity(headers);
+    httpentity request = new httpentity(headers);
     
-    ResponseEntity<String> result = new RestTemplate().exchange("http://127.0.0.1/token/sample",
-                                                                HttpMethod.GET,
+    responseentity<string> result = new resttemplate().exchange("http://127.0.0.1/token/sample",
+                                                                httpmethod.get,
                                                                 request,
-                                                                String.class);   
+                                                                string.class);   
 
 
-# Appendix : error code explain 
+# appendix : error code explain 
 
-Error response format (JSON) for example:
+error response format (json) for example:
 
-    {"message":"The token is disabled","succeed":false,"errorCode":"error.tokenIsDisabled"}
+    {"message":"the token is disabled","succeed":false,"errorcode":"error.tokenisdisabled"}
     
-Explain
+explain
     
 error code | error message | http status code | description
 -----------|-----------|-----------|-----------
-error.invalidUserOrPassword | Invalid username or password. |  |
-error.invalidTokenOrExpired | The session is invalid or expired. | |
-error.tokenIsDisabled |The token is disabled. | |
-error.userIsLocked | The user is locked. | | 
-error.userIsDisabled | The user is disabled. | |
-error.userIsExpired | The user is expired. | |
-error.authenticationRequired | Authentication required. | |
-error.authenticationFailed | Authentication failed. | |
-error.authorizationFailed | Authorization failed. | |
-error.noPermission | No permission.Access denied. | |
+error.invaliduserorpassword | invalid username or password. |  |
+error.invalidtokenorexpired | the session is invalid or expired. | |
+error.tokenisdisabled |the token is disabled. | |
+error.userislocked | the user is locked. | | 
+error.userisdisabled | the user is disabled. | |
+error.userisexpired | the user is expired. | |
+error.authenticationrequired | authentication required. | |
+error.authenticationfailed | authentication failed. | |
+error.authorizationfailed | authorization failed. | |
+error.nopermission | no permission.access denied. | |
