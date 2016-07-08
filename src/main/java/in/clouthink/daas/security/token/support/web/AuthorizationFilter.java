@@ -99,13 +99,16 @@ public class AuthorizationFilter extends GenericFilterBean {
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
                                                   IOException {
+        logger.trace("doFilter start");
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isUrlProcessingMatched(request, response)
             && !isPreflightRequest(request)) {
+            logger.trace("doAuthorization matched");
             doAuthorization(request, response, chain);
         }
         else {
+            logger.trace("doAuthorization un-matched, skip it");
             chain.doFilter(request, response);
         }
     }
@@ -114,6 +117,7 @@ public class AuthorizationFilter extends GenericFilterBean {
                                  HttpServletResponse response,
                                  FilterChain chain) throws IOException,
                                                     ServletException {
+        logger.trace("doAuthorization start");
         try {
             Authentication authentication = SecurityUtils.currentAuthentication();
             if (authentication == null) {

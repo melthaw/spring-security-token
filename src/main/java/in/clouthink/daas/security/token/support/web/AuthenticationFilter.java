@@ -35,7 +35,7 @@ public class AuthenticationFilter extends GenericFilterBean {
     private RequestMatcher urlRequestMatcher;
     
     private RequestMatcher ignoredUrlRequestMatcher;
-    
+
     /**
      *
      */
@@ -103,13 +103,16 @@ public class AuthenticationFilter extends GenericFilterBean {
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
                                                   IOException {
+        logger.trace("doFilter start");
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isUrlProcessingMatched(request, response)
             && !isPreflightRequest(request)) {
+            logger.trace("doAuthentication matched");
             doAuthentication(request, response, chain);
         }
         else {
+            logger.trace("doAuthentication un-matched, skip it");
             chain.doFilter(request, response);
         }
     }
@@ -118,6 +121,7 @@ public class AuthenticationFilter extends GenericFilterBean {
                                   HttpServletResponse response,
                                   FilterChain chain) throws IOException,
                                                      ServletException {
+        logger.trace("doAuthentication start");
         try {
             Authentication authentication = SecurityContextManager.getContext()
                                                                   .getAuthentication();

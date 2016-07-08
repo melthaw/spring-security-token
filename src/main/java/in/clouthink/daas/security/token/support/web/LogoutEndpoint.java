@@ -116,18 +116,22 @@ public class LogoutEndpoint extends GenericFilterBean implements ApplicationCont
 	@Override
 	public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws ServletException, IOException {
+		logger.trace("doFilter start");
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) res;
 		if (isLogoutMatched(request, response)) {
+			logger.trace("doLogout matched");
 			doLogout(request, response, chain);
 		}
 		else {
+			logger.trace("doLogout un-matched, skip it");
 			chain.doFilter(request, response);
 		}
 	}
 
 	private void doLogout(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		logger.trace("doLogout start");
 		try {
 			String tokenValue = tokenResolver.resolve(request, response);
 			Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));

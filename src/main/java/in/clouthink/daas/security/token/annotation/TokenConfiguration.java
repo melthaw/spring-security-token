@@ -12,6 +12,8 @@ import in.clouthink.daas.security.token.spi.impl.SimpleFederationProvider;
 import in.clouthink.daas.security.token.support.i18n.DefaultMessageProvider;
 import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import in.clouthink.daas.security.token.support.web.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.ListableBeanFactory;
@@ -42,7 +44,7 @@ import in.clouthink.daas.security.token.spi.impl.memory.TokenProviderMemoryImpl;
 
 @Configuration
 public class TokenConfiguration implements ImportAware, BeanFactoryAware {
-    
+
     public static final String DAAS_TOKEN_FILTER = "daasTokenFilter";
     
     protected ListableBeanFactory beanFactory;

@@ -116,27 +116,32 @@ public class PreAuthenticationFilter extends GenericFilterBean {
                                ServletResponse res,
                                FilterChain chain) throws ServletException,
                                                   IOException {
+        logger.trace("doFilter start");
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isUrlProcessingMatched(request, response)
             && !isPreflightRequest(request)) {
-            doAuthentication(request, response, chain);
+            logger.trace("doPreAuthentication matched");
+            doPreAuthentication(request, response, chain);
         }
         else {
+            logger.trace("doPreAuthentication un-matched, skip it");
             chain.doFilter(request, response);
         }
     }
     
-    private void doAuthentication(HttpServletRequest request,
-                                  HttpServletResponse response,
-                                  FilterChain chain) throws IOException,
+    private void doPreAuthentication(HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     FilterChain chain) throws IOException,
                                                      ServletException {
+        logger.trace("doPreAuthentication start");
         try {
             String tokenValue = null;
             try {
                 tokenValue = tokenResolver.resolve(request, response);
             }
             catch (Exception e) {
+                logger.trace("tokenResolver#resolve failed");
                 if (strictTokenEnabled) {
                     logger.error(e, e);
                     authorizationFailureHandler.handle(request, response, e);
@@ -145,6 +150,7 @@ public class PreAuthenticationFilter extends GenericFilterBean {
             }
             
             if (tokenValue == null) {
+                logger.trace("token is null, skip authenticating token");
                 chain.doFilter(request, response);
                 return;
             }

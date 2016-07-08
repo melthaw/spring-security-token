@@ -168,18 +168,22 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
 	@Override
 	public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
 			throws ServletException, IOException {
+		logger.trace("doFilter start");
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) res;
 		if (isLoginMatched(request, response)) {
+			logger.trace("doLogin matched");
 			doLogin(request, response, chain);
 		}
 		else {
+			logger.trace("doLogin un-matched, skip it");
 			chain.doFilter(request, response);
 		}
 	}
 
 	private void doLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
+		logger.trace("doLogin start");
 		try {
 			if (postOnly && !"POST".equals(request.getMethod())) {
 				throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
