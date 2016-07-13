@@ -27,9 +27,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.ImportAware;
-import org.springframework.core.Ordered;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.annotation.Order;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -38,8 +36,6 @@ import java.util.Collection;
 
 @Configuration
 public class TokenConfiguration implements ImportAware, BeanFactoryAware {
-
-	public static final String DAAS_TOKEN_FILTER = "daasTokenFilter";
 
 	protected ListableBeanFactory beanFactory;
 
@@ -72,94 +68,66 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 		this.enableToken = AnnotationAttributes.fromMap(importMetadata.getAnnotationAttributes(EnableToken.class.getName(),
 																							   false));
 		Assert.notNull(this.enableToken,
-					   "@EnableJwt is not present on importing class " + importMetadata.getClassName());
-	}
-
-	//    @Bean(name = DAAS_TOKEN_FILTER)
-	//    @Autowired
-	//    public CompositeFilter daasTokenCompositeFilter(PreAuthenticationFilter preAuthenticationFilter,
-	//                                                    AuthenticationFilter authenticationFilter,
-	//                                                    AuthorizationFilter authorizationFilter,
-	//                                                    LoginEndpoint loginEndpoint,
-	//                                                    LogoutEndpoint logoutEndpoint) {
-	//        List<Filter> filters = new ArrayList<Filter>();
-	//        tokenConfigurer.configure(preAuthenticationFilter);
-	//        tokenConfigurer.configure(authenticationFilter);
-	//        tokenConfigurer.configure(authorizationFilter);
-	//        tokenConfigurer.configure(loginEndpoint);
-	//        tokenConfigurer.configure(logoutEndpoint);
-	//        filters.add(loginEndpoint);
-	//        filters.add(logoutEndpoint);
-	//        filters.add(preAuthenticationFilter);
-	//        filters.add(authenticationFilter);
-	//        filters.add(authorizationFilter);
-	//        CompositeFilter result = new CompositeFilter();
-	//        result.setFilters(filters);
-	//        return result;
-	//    }
-
-	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE + 1)
-	@Autowired
-	@DependsOn("daasDefaultAuthenticationManager")
-	public LoginEndpoint daasTokenLoginEndpoint(AuthenticationManager authenticationManager,
-												MessageProvider messageProvider) {
-		LoginEndpoint result = new LoginEndpoint();
-		result.setAuthenticationManager(authenticationManager);
-		result.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(messageProvider));
-		tokenConfigurer.configure(result);
-		return result;
+					   "@EnableToken is not present on importing class " + importMetadata.getClassName());
 	}
 
 	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE + 2)
-	@Autowired
-	@DependsOn("daasDefaultAuthenticationManager")
-	public LogoutEndpoint daasTokenLogoutEndpoint(AuthenticationManager authenticationManager,
-												  MessageProvider messageProvider) {
-		LogoutEndpoint result = new LogoutEndpoint();
-		result.setAuthenticationManager(authenticationManager);
-		result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
-		tokenConfigurer.configure(result);
-		return result;
-	}
-
-	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE + 3)
-	@Autowired
-	@DependsOn("daasDefaultAuthenticationManager")
-	public PreAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
-																	MessageProvider messageProvider) {
-		PreAuthenticationFilter result = new PreAuthenticationFilter();
-		result.setAuthenticationManager(authenticationManager);
-		result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
-		tokenConfigurer.configure(result);
-		return result;
-	}
-
-	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE + 4)
-	@Autowired
-	@DependsOn("daasDefaultAuthenticationManager")
-	public AuthenticationFilter daasTokenAuthenticationFilter(AuthenticationManager authenticationManager,
-															  MessageProvider messageProvider) {
-		AuthenticationFilter result = new AuthenticationFilter();
-		result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
-		tokenConfigurer.configure(result);
-		return result;
-	}
-
-	@Bean
-	@Order(Ordered.HIGHEST_PRECEDENCE + 5)
 	@Autowired
 	@DependsOn("daasDefaultAuthorizationManager")
 	public AuthorizationFilter daasTokenAuthorizationFilter(AuthorizationManager authorizationManager,
 															MessageProvider messageProvider) {
-		AuthorizationFilter result = new AuthorizationFilter();
-		result.setAuthorizationManager(authorizationManager);
-		result.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
-		tokenConfigurer.configure(result);
-		return result;
+		AuthorizationFilter authorizationFilter = new AuthorizationFilter();
+		authorizationFilter.setAuthorizationManager(authorizationManager);
+		authorizationFilter.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+		tokenConfigurer.configure(authorizationFilter);
+		return authorizationFilter;
+	}
+
+	@Bean
+	@Autowired
+	@DependsOn("daasDefaultAuthenticationManager")
+	public AuthenticationFilter daasTokenAuthenticationFilter(AuthenticationManager authenticationManager,
+															  MessageProvider messageProvider) {
+		AuthenticationFilter authenticationFilter = new AuthenticationFilter();
+		authenticationFilter.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+		tokenConfigurer.configure(authenticationFilter);
+		return authenticationFilter;
+	}
+
+	@Bean
+	@Autowired
+	@DependsOn("daasDefaultAuthenticationManager")
+	public PreAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
+																	MessageProvider messageProvider) {
+		PreAuthenticationFilter preAuthenticationFilter = new PreAuthenticationFilter();
+		preAuthenticationFilter.setAuthenticationManager(authenticationManager);
+		preAuthenticationFilter.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+		tokenConfigurer.configure(preAuthenticationFilter);
+		return preAuthenticationFilter;
+	}
+
+	@Bean
+	@Autowired
+	@DependsOn("daasDefaultAuthenticationManager")
+	public LogoutEndpoint daasTokenLogoutEndpoint(AuthenticationManager authenticationManager,
+												  MessageProvider messageProvider) {
+		LogoutEndpoint logoutEndpoint = new LogoutEndpoint();
+		logoutEndpoint.setAuthenticationManager(authenticationManager);
+		logoutEndpoint.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+		tokenConfigurer.configure(logoutEndpoint);
+		return logoutEndpoint;
+	}
+
+	@Bean
+	@Autowired
+	@DependsOn("daasDefaultAuthenticationManager")
+	public LoginEndpoint daasTokenLoginEndpoint(AuthenticationManager authenticationManager,
+												MessageProvider messageProvider) {
+		LoginEndpoint loginEndpoint = new LoginEndpoint();
+		loginEndpoint.setAuthenticationManager(authenticationManager);
+		loginEndpoint.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(messageProvider));
+		tokenConfigurer.configure(loginEndpoint);
+		return loginEndpoint;
 	}
 
 	@Bean

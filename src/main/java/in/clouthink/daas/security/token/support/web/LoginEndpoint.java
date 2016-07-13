@@ -14,6 +14,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -25,13 +26,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class LoginEndpoint extends GenericFilterBean implements ApplicationContextAware {
+public class LoginEndpoint extends GenericFilterBean implements ApplicationContextAware, Ordered {
 
 	private static final Log logger = LogFactory.getLog(LoginEndpoint.class);
 
 	public static final String SECURITY_FORM_USERNAME_KEY = "username";
 
 	public static final String SECURITY_FORM_PASSWORD_KEY = "password";
+
+	//@since 2.0.0
+	private int order = Ordered.HIGHEST_PRECEDENCE + 1;
 
 	private String usernameParameter = SECURITY_FORM_USERNAME_KEY;
 
@@ -75,6 +79,21 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
 		Assert.notNull(loginRequestMatcher, "loginRequestMatcher cannot be null");
 		this.loginRequestMatcher = loginRequestMatcher;
 
+	}
+
+	/**
+	 * @param order the order to set
+	 */
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
+	/**
+	 * @return the order
+	 */
+	@Override
+	public int getOrder() {
+		return this.order;
 	}
 
 	/**
@@ -261,6 +280,7 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
 
 	@Override
 	public void afterPropertiesSet() {
+		logger.trace("afterPropertiesSet");
 		Assert.notNull(authenticationManager, "authenticationManager must be specified");
 	}
 }

@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -23,11 +24,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class LogoutEndpoint extends GenericFilterBean implements ApplicationContextAware {
+public class LogoutEndpoint extends GenericFilterBean implements ApplicationContextAware, Ordered {
 
 	private static final Log logger = LogFactory.getLog(LogoutEndpoint.class);
 
-	private static final String HEADER_AUTHORIZATION_PREFIX = "Bearer ";
+	//@since 2.0.0
+	private int order = Ordered.HIGHEST_PRECEDENCE + 2;
 
 	//@since 1.5.0
 	private ApplicationContext applicationContext;
@@ -65,6 +67,21 @@ public class LogoutEndpoint extends GenericFilterBean implements ApplicationCont
 		Assert.notNull(logoutRequestMatcher, "logoutRequestMatcher cannot be null");
 		this.logoutRequestMatcher = logoutRequestMatcher;
 
+	}
+
+	/**
+	 * @param order the order to set
+	 */
+	public void setOrder(int order) {
+		this.order = order;
+	}
+
+	/**
+	 * @return the order
+	 */
+	@Override
+	public int getOrder() {
+		return this.order;
 	}
 
 	/**
@@ -162,6 +179,7 @@ public class LogoutEndpoint extends GenericFilterBean implements ApplicationCont
 
 	@Override
 	public void afterPropertiesSet() {
+		logger.trace("afterPropertiesSet");
 		Assert.notNull(authenticationManager, "authenticationManager must be specified");
 	}
 }
