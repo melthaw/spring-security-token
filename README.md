@@ -33,7 +33,7 @@ So far 1.6.0 is available
 Use `@EnableToken` to get started 
 
     @Configuration
-    @EnableToken
+    @EnableToken    
     public class Application {}
 
  

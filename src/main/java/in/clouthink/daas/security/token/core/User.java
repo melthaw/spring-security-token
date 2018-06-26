@@ -18,5 +18,5 @@ public interface User extends Serializable {
     boolean isLocked();
     
     List<Role> getRoles();
-    
+
 }

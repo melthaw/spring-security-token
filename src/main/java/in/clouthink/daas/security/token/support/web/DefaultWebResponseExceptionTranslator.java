@@ -55,7 +55,7 @@ public class DefaultWebResponseExceptionTranslator implements
                                       HttpStatus.OK);
         }
 
-        if (e instanceof BadCredetialException) {
+        if (e instanceof BadCredentialException) {
             return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.INVALID_USER_OR_PASSWORD,
                                                                  messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
                                       headers,

@@ -6,6 +6,7 @@ import in.clouthink.daas.security.token.core.UsernamePasswordAuthenticationReque
 import in.clouthink.daas.security.token.event.authentication.HttpLoginEvent;
 import in.clouthink.daas.security.token.exception.AuthenticationException;
 import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
+import in.clouthink.daas.security.token.exception.BadCredentialException;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 import in.clouthink.daas.security.token.spi.AuditCallback;

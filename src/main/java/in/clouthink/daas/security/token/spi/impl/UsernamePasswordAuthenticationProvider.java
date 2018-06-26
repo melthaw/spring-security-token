@@ -12,8 +12,6 @@ import in.clouthink.daas.security.token.spi.DigestMetadataProvider;
 import in.clouthink.daas.security.token.spi.IdentityProvider;
 import in.clouthink.daas.security.token.spi.PasswordDigesterProvider;
 
-import java.util.List;
-
 /**
  */
 public class UsernamePasswordAuthenticationProvider implements
@@ -91,7 +89,7 @@ public class UsernamePasswordAuthenticationProvider implements
         PasswordDigester passwordDigester = passwordDigesterProvider.getPasswordDigester(digestAlgorithm);
         
         if (!passwordDigester.matches(password, encodedPassword, salt)) {
-            throw new BadCredetialException();
+            throw new BadCredentialException();
         }
 
         Token token = tokenManager.createToken(user);
