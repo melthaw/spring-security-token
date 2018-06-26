@@ -1,9 +1,6 @@
 package in.clouthink.daas.security.token.support.web;
 
-import in.clouthink.daas.security.token.core.Authentication;
-import in.clouthink.daas.security.token.core.AuthenticationManager;
-import in.clouthink.daas.security.token.core.SecurityContextManager;
-import in.clouthink.daas.security.token.core.TokenAuthenticationRequest;
+import in.clouthink.daas.security.token.core.*;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 import org.apache.commons.logging.Log;
@@ -22,180 +19,168 @@ import java.io.IOException;
 
 public class PreAuthenticationFilter extends GenericFilterBean implements Ordered {
 
-	private static final Log logger = LogFactory.getLog(PreAuthenticationFilter.class);
+    private static final Log logger = LogFactory.getLog(PreAuthenticationFilter.class);
 
-	//@since 2.0.0
-	private int order = Ordered.HIGHEST_PRECEDENCE + 3;
+    //@since 1.2.0
+    private int order = Ordered.HIGHEST_PRECEDENCE + 3;
 
-	private TokenResolver tokenResolver = new BearerAuthorizationHeaderTokenResolver();
+    private TokenResolver tokenResolver = new BearerAuthorizationHeaderTokenResolver();
 
-	private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
+    private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
 
-	private boolean corsEnabled = false;
+    private RequestMatcher urlRequestMatcher;
 
-	private boolean strictTokenEnabled = true;
+    private AuthenticationManager authenticationManager;
 
-	private RequestMatcher urlRequestMatcher;
+    //@since 1.6.0
+    private FeatureConfigurer featureConfigurer;
 
-	private AuthenticationManager authenticationManager;
+    /**
+     *
+     */
+    public PreAuthenticationFilter() {
+        this.urlRequestMatcher = new AntPathRequestMatcher("/api**");
+    }
 
-	/**
-	 *
-	 */
-	public PreAuthenticationFilter() {
-		this.urlRequestMatcher = new AntPathRequestMatcher("/api**");
-	}
+    /**
+     *
+     */
+    public PreAuthenticationFilter(String filterProcessesUrl) {
+        this.urlRequestMatcher = new AntPathRequestMatcher(filterProcessesUrl);
+    }
 
-	/**
-	 *
-	 */
-	public PreAuthenticationFilter(String filterProcessesUrl) {
-		this.urlRequestMatcher = new AntPathRequestMatcher(filterProcessesUrl);
-	}
+    /**
+     *
+     */
+    public PreAuthenticationFilter(RequestMatcher urlRequestMatcher) {
+        this.urlRequestMatcher = urlRequestMatcher;
+    }
 
-	/**
-	 *
-	 */
-	public PreAuthenticationFilter(RequestMatcher urlRequestMatcher) {
-		this.urlRequestMatcher = urlRequestMatcher;
-	}
+    /**
+     * @param order the order to set
+     */
+    public void setOrder(int order) {
+        this.order = order;
+    }
 
-	/**
-	 * @param order the order to set
-	 */
-	public void setOrder(int order) {
-		this.order = order;
-	}
+    /**
+     * @return the order
+     */
+    @Override
+    public int getOrder() {
+        return this.order;
+    }
 
-	/**
-	 * @return the order
-	 */
-	@Override
-	public int getOrder() {
-		return this.order;
-	}
+    public void setProcessesUrl(String filterProcessesUrl) {
+        this.urlRequestMatcher = new AntPathRequestMatcher(filterProcessesUrl);
+    }
 
-	public void setProcessesUrl(String filterProcessesUrl) {
-		this.urlRequestMatcher = new AntPathRequestMatcher(filterProcessesUrl);
-	}
+    public final void setUrlRequestMatcher(RequestMatcher urlRequestMatcher) {
+        Assert.notNull(urlRequestMatcher, "urlRequestMatcher cannot be null");
+        this.urlRequestMatcher = urlRequestMatcher;
+    }
 
-	public final void setUrlRequestMatcher(RequestMatcher urlRequestMatcher) {
-		Assert.notNull(urlRequestMatcher, "urlRequestMatcher cannot be null");
-		this.urlRequestMatcher = urlRequestMatcher;
-	}
+    public TokenResolver getTokenResolver() {
+        return tokenResolver;
+    }
 
-	public TokenResolver getTokenResolver() {
-		return tokenResolver;
-	}
+    public void setTokenResolver(TokenResolver tokenResolver) {
+        this.tokenResolver = tokenResolver;
+    }
 
-	public void setTokenResolver(TokenResolver tokenResolver) {
-		this.tokenResolver = tokenResolver;
-	}
+    public AuthorizationFailureHandler getAuthorizationFailureHandler() {
+        return authorizationFailureHandler;
+    }
 
-	public AuthorizationFailureHandler getAuthorizationFailureHandler() {
-		return authorizationFailureHandler;
-	}
+    public void setAuthorizationFailureHandler(AuthorizationFailureHandler authorizationFailureHandler) {
+        this.authorizationFailureHandler = authorizationFailureHandler;
+    }
 
-	public void setAuthorizationFailureHandler(AuthorizationFailureHandler authorizationFailureHandler) {
-		this.authorizationFailureHandler = authorizationFailureHandler;
-	}
+    public void setFeatureConfigurer(FeatureConfigurer featureConfigurer) {
+        this.featureConfigurer = featureConfigurer;
+    }
 
-	public boolean isCorsEnabled() {
-		return corsEnabled;
-	}
+    public RequestMatcher getUrlRequestMatcher() {
+        return urlRequestMatcher;
+    }
 
-	public void setCorsEnabled(boolean corsEnabled) {
-		this.corsEnabled = corsEnabled;
-	}
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
+    }
 
-	public boolean isStrictTokenEnabled() {
-		return strictTokenEnabled;
-	}
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
-	public void setStrictTokenEnabled(boolean strictTokenEnabled) {
-		this.strictTokenEnabled = strictTokenEnabled;
-	}
+    @Override
+    public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        logger.trace("doFilter start");
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+        if (isUrlProcessingMatched(request, response) && !isPreFlightRequest(request)) {
+            logger.trace("doPreAuthentication matched");
+            doPreAuthentication(request, response, chain);
+        }
+        else {
+            logger.trace("doPreAuthentication un-matched, skip it");
+            chain.doFilter(request, response);
+        }
+    }
 
-	public RequestMatcher getUrlRequestMatcher() {
-		return urlRequestMatcher;
-	}
+    private void doPreAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        logger.trace("doPreAuthentication start");
+        try {
+            String tokenValue = null;
+            try {
+                tokenValue = tokenResolver.resolve(request, response);
+            } catch (Exception e) {
+                logger.trace("tokenResolver#resolve failed");
+                if (this.featureConfigurer.isEnabled(AuthenticationFeature.STRICT_TOKEN)) {
+                    logger.error(e, e);
+                    authorizationFailureHandler.handle(request, response, e);
+                    return;
+                }
+            }
 
-	public AuthenticationManager getAuthenticationManager() {
-		return authenticationManager;
-	}
+            if (tokenValue == null) {
+                logger.trace("token is null, skip authenticating token");
+                chain.doFilter(request, response);
+                return;
+            }
 
-	public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-		this.authenticationManager = authenticationManager;
-	}
+            try {
+                Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
+                SecurityContextManager.getContext().setAuthentication(authentication);
+            } catch (Exception e) {
+                logger.error(e, e);
+                if (this.featureConfigurer.isDisabled(AuthenticationFeature.IGNORE_PRE_AUTHN_ERROR)) {
+                    authorizationFailureHandler.handle(request, response, e);
+                    return;
+                }
+            }
+            chain.doFilter(request, response);
+        } finally {
+            SecurityContextManager.clearContext();
+        }
+    }
 
-	@Override
-	public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-			throws ServletException, IOException {
-		logger.trace("doFilter start");
-		HttpServletRequest request = (HttpServletRequest) req;
-		HttpServletResponse response = (HttpServletResponse) res;
-		if (isUrlProcessingMatched(request, response) && !isPreflightRequest(request)) {
-			logger.trace("doPreAuthentication matched");
-			doPreAuthentication(request, response, chain);
-		}
-		else {
-			logger.trace("doPreAuthentication un-matched, skip it");
-			chain.doFilter(request, response);
-		}
-	}
+    private boolean isPreFlightRequest(HttpServletRequest request) {
+        return this.featureConfigurer.isEnabled(AuthenticationFeature.CORS) &&
+                "OPTIONS".equalsIgnoreCase(request.getMethod());
+    }
 
-	private void doPreAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
-		logger.trace("doPreAuthentication start");
-		try {
-			String tokenValue = null;
-			try {
-				tokenValue = tokenResolver.resolve(request, response);
-			}
-			catch (Exception e) {
-				logger.trace("tokenResolver#resolve failed");
-				if (strictTokenEnabled) {
-					logger.error(e, e);
-					authorizationFailureHandler.handle(request, response, e);
-					return;
-				}
-			}
+    protected boolean isUrlProcessingMatched(HttpServletRequest request, HttpServletResponse response) {
+        return urlRequestMatcher.matches(request);
+    }
 
-			if (tokenValue == null) {
-				logger.trace("token is null, skip authenticating token");
-				chain.doFilter(request, response);
-				return;
-			}
+    @Override
+    public void afterPropertiesSet() {
+        logger.trace("afterPropertiesSet");
 
-			try {
-				Authentication authentication = authenticationManager.login(new TokenAuthenticationRequest(tokenValue));
-				SecurityContextManager.getContext().setAuthentication(authentication);
-			}
-			catch (Exception e) {
-				logger.error(e, e);
-				authorizationFailureHandler.handle(request, response, e);
-				return;
-			}
-			chain.doFilter(request, response);
-		}
-		finally {
-			SecurityContextManager.clearContext();
-		}
-	}
-
-	private boolean isPreflightRequest(HttpServletRequest request) {
-		return corsEnabled && "OPTIONS".equalsIgnoreCase(request.getMethod());
-	}
-
-	protected boolean isUrlProcessingMatched(HttpServletRequest request, HttpServletResponse response) {
-		return urlRequestMatcher.matches(request);
-	}
-
-	@Override
-	public void afterPropertiesSet() {
-		logger.trace("afterPropertiesSet");
-
-		Assert.notNull(authenticationManager, "authenticationManager must be specified");
-	}
+        Assert.notNull(featureConfigurer, "featureConfigurer must be specified");
+        Assert.notNull(authenticationManager, "authenticationManager must be specified");
+    }
 
 }
