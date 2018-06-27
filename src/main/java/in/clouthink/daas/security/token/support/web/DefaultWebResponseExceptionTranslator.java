@@ -58,11 +58,18 @@ public class DefaultWebResponseExceptionTranslator implements
         if (e instanceof LoginAttemptException) {
             return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.LOGIN_ATTEMPT_FAILURE,
                                                                  String.format(messageProvider.getMessage(ErrorConstants.LOGIN_ATTEMPT_FAILURE),
-                                                                               ((LoginAttemptException) e).getAttempts(),
-                                                                               ((LoginAttemptException) e).getMaxAttempts() -
-                                                                                       ((LoginAttemptException) e).getAttempts(),
                                                                                ((LoginAttemptException) e).getAttemptTimeout() /
-                                                                                       (60 % 60 % 1000))),
+                                                                                       (60 * 60 * 1000),
+                                                                               ((LoginAttemptException) e).getMaxAttempts() -
+                                                                                       ((LoginAttemptException) e).getAttempts())),
+                                      headers,
+                                      HttpStatus.OK);
+        }
+
+        if (e instanceof LoginLockedException) {
+            return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.LOGIN_LOCKED,
+                                                                 String.format(messageProvider.getMessage(ErrorConstants.LOGIN_LOCKED),
+                                                                               ((LoginLockedException) e).getAttempts())),
                                       headers,
                                       HttpStatus.OK);
         }

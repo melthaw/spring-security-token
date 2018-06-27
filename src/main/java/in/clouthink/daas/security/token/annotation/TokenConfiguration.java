@@ -139,14 +139,16 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn({"daasUsernamePasswordAuthenticationProvider", "daasTokenAuthenticationProvider", "daasDefaultLoginAttemptProvider"})
+    @DependsOn({"daasUsernamePasswordAuthenticationProvider", "daasTokenAuthenticationProvider", "daasDefaultLoginAttemptProvider", "daasFeatureConfigurer"})
     public AuthenticationManager daasDefaultAuthenticationManager(IdentityProvider identityProvider,
                                                                   LoginAttemptManager loginAttemptManager,
-                                                                  TokenManager tokenManager) {
+                                                                  TokenManager tokenManager,
+                                                                  FeatureConfigurer featureConfigurer) {
         DefaultAuthenticationManager result = new DefaultAuthenticationManager();
         result.addProvider(daasUsernamePasswordAuthenticationProvider(identityProvider,
                                                                       loginAttemptManager,
-                                                                      tokenManager));
+                                                                      tokenManager,
+                                                                      featureConfigurer));
         result.addProvider(daasTokenAuthenticationProvider(identityProvider, tokenManager));
         return result;
     }
@@ -174,11 +176,13 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Autowired
     public AuthenticationProvider daasUsernamePasswordAuthenticationProvider(IdentityProvider identityProvider,
                                                                              LoginAttemptManager loginAttemptManager,
-                                                                             TokenManager tokenManager) {
+                                                                             TokenManager tokenManager,
+                                                                             FeatureConfigurer featureConfigurer) {
         UsernamePasswordAuthenticationProvider result = new UsernamePasswordAuthenticationProvider();
         result.setIdentityProvider(identityProvider);
         result.setLoginAttemptManager(loginAttemptManager);
         result.setTokenManager(tokenManager);
+        result.setFeatureConfigurer(featureConfigurer);
         return result;
     }
 

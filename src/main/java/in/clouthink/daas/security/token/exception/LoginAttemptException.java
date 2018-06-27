@@ -1,5 +1,8 @@
 package in.clouthink.daas.security.token.exception;
 
+/**
+ * @since 1.7.0
+ */
 public class LoginAttemptException extends BadCredentialException {
 
     private final short attempts;

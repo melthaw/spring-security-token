@@ -128,6 +128,7 @@ public class UsernamePasswordAuthenticationProvider implements
             if (loginAttemptManager.isAttemptExhausted(username)) {
                 //lock the user if the attempt is exhausted
                 identityProvider.lock(username);
+                throw new LoginLockedException(loginAttempt.getAttempts());
             }
 
             throw new LoginAttemptException(loginAttempt.getAttempts(),

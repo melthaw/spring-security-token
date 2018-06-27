@@ -386,6 +386,8 @@ error.authenticationRequired | Authentication required. | |
 error.authenticationFailed | Authentication failed. | |
 error.authorizationFailed | Authorization failed. | |
 error.noPermission | No permission.Access denied. | |
+error.loginAttemptFailure | Wrong password. In %d hours only %d time(s) left. | | since 1.7.0
+error.loginLocked | Wrong %d times. User is locked. | | since 1.7.0
 
 ## Appendix : web.xml filter configuration sample
 
