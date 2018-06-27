@@ -14,41 +14,41 @@ import java.util.List;
 /**
  */
 public class TokenProviderMemcachedImpl implements TokenProvider<Token> {
-    
+
     public static final Log logger = LogFactory.getLog(TokenProviderMemcachedImpl.class);
-    
+
     @Autowired
     private MemcachedClient memcachedClient;
-    
+
     @Override
     public void saveToken(Token token) {
         logger.debug(String.format("Put token:%s expiredAt:%s",
                                    token.getToken(),
                                    token.getExpiredDate()));
-        memcachedClient.add(token.getToken(),
+        memcachedClient.add("T_" + token.getToken(),
                             (int) ((token.getExpiredDate().getTime() - System.currentTimeMillis()) / 1000),
                             token);
     }
-    
+
     @Override
     public Token findByToken(String token) {
         logger.debug(String.format("Get token:%s", token));
-        return (Token) memcachedClient.get(token);
+        return (Token) memcachedClient.get("T_" + token);
     }
-    
+
     @Override
     public void revokeToken(Token token) {
         logger.debug(String.format("Del token:%s", token));
         if (token == null) {
             return;
         }
-        memcachedClient.delete(token.getToken());
+        memcachedClient.delete("T_" + token.getToken());
     }
-    
+
     @Override
     public List<Token> findByUser(User user) {
         // TODO : NOT SUPPORTED NOW
         return Collections.EMPTY_LIST;
     }
-    
+
 }

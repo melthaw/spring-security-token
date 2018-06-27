@@ -1,6 +1,7 @@
 package in.clouthink.daas.security.token.configure;
 
 import in.clouthink.daas.security.token.core.FeatureConfigurer;
+import in.clouthink.daas.security.token.core.LoginAttemptStrategySupport;
 import in.clouthink.daas.security.token.core.TokenLifeSupport;
 import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import in.clouthink.daas.security.token.support.web.*;
@@ -41,6 +42,12 @@ public class TokenConfigurerAdapter implements TokenConfigurer {
 
     @Override
     public void configure(TokenLifeSupport tokenLifeSupport) {
+
+    }
+
+
+    @Override
+    public void configure(LoginAttemptStrategySupport loginAttemptStrategySupport) {
 
     }
 

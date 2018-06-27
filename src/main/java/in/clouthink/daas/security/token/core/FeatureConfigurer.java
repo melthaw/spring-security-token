@@ -27,7 +27,7 @@ public class FeatureConfigurer {
      * Method for changing state of an on/off authn feature for
      * this object mapper.
      */
-    public FeatureConfigurer configure(AuthenticationFeature f, boolean state) {
+    public final FeatureConfigurer configure(AuthenticationFeature f, boolean state) {
         this._authnConfig = state ? this._authnConfig.with(f) : this._authnConfig.without(f);
         return this;
     }
@@ -36,7 +36,7 @@ public class FeatureConfigurer {
      * Method for enabling specified {@link AuthnConfig} features.
      * Modifies and returns this instance; no new object is created.
      */
-    public FeatureConfigurer enable(AuthenticationFeature feature) {
+    public final FeatureConfigurer enable(AuthenticationFeature feature) {
         this._authnConfig = this._authnConfig.with(feature);
         return this;
     }
@@ -45,8 +45,8 @@ public class FeatureConfigurer {
      * Method for enabling specified {@link AuthnConfig} features.
      * Modifies and returns this instance; no new object is created.
      */
-    public FeatureConfigurer enable(AuthenticationFeature first,
-                                    AuthenticationFeature... f) {
+    public final FeatureConfigurer enable(AuthenticationFeature first,
+                                          AuthenticationFeature... f) {
         this._authnConfig = this._authnConfig.with(first, f);
         return this;
     }
@@ -55,7 +55,7 @@ public class FeatureConfigurer {
      * Method for enabling specified {@link AuthnConfig} features.
      * Modifies and returns this instance; no new object is created.
      */
-    public FeatureConfigurer disable(AuthenticationFeature feature) {
+    public final FeatureConfigurer disable(AuthenticationFeature feature) {
         this._authnConfig = this._authnConfig.without(feature);
         return this;
     }
@@ -64,8 +64,8 @@ public class FeatureConfigurer {
      * Method for enabling specified {@link AuthnConfig} features.
      * Modifies and returns this instance; no new object is created.
      */
-    public FeatureConfigurer disable(AuthenticationFeature first,
-                                     AuthenticationFeature... f) {
+    public final FeatureConfigurer disable(AuthenticationFeature first,
+                                           AuthenticationFeature... f) {
         this._authnConfig = this._authnConfig.without(first, f);
         return this;
     }

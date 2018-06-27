@@ -24,7 +24,14 @@ public enum AuthenticationFeature implements ConfigFeature {
      * <p>
      * And false as default value.
      */
-    IGNORE_PRE_AUTHN_ERROR(false);
+    IGNORE_PRE_AUTHN_ERROR(false),
+
+    /**
+     * Feature that determines whether lock the user when user login failed and count to the max attempt.
+     * <p>
+     * And false as default value.
+     */
+    LOGIN_ATTEMPT_ENABLED(false);
 
     private final boolean _defaultState;
     private final int _mask;

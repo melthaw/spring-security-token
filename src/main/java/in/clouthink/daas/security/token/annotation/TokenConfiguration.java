@@ -14,6 +14,7 @@ import in.clouthink.daas.security.token.spi.impl.SimpleFederationProvider;
 import in.clouthink.daas.security.token.spi.impl.TokenAuthenticationProvider;
 import in.clouthink.daas.security.token.spi.impl.UsernamePasswordAuthenticationProvider;
 import in.clouthink.daas.security.token.spi.impl.memory.IdentityProviderMemoryImpl;
+import in.clouthink.daas.security.token.spi.impl.memory.LoginAttemptProviderMemoryImpl;
 import in.clouthink.daas.security.token.spi.impl.memory.TokenProviderMemoryImpl;
 import in.clouthink.daas.security.token.support.i18n.DefaultMessageProvider;
 import in.clouthink.daas.security.token.support.i18n.MessageProvider;
@@ -138,11 +139,14 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn({"daasUsernamePasswordAuthenticationProvider", "daasTokenAuthenticationProvider"})
+    @DependsOn({"daasUsernamePasswordAuthenticationProvider", "daasTokenAuthenticationProvider", "daasDefaultLoginAttemptProvider"})
     public AuthenticationManager daasDefaultAuthenticationManager(IdentityProvider identityProvider,
+                                                                  LoginAttemptManager loginAttemptManager,
                                                                   TokenManager tokenManager) {
         DefaultAuthenticationManager result = new DefaultAuthenticationManager();
-        result.addProvider(daasUsernamePasswordAuthenticationProvider(identityProvider, tokenManager));
+        result.addProvider(daasUsernamePasswordAuthenticationProvider(identityProvider,
+                                                                      loginAttemptManager,
+                                                                      tokenManager));
         result.addProvider(daasTokenAuthenticationProvider(identityProvider, tokenManager));
         return result;
     }
@@ -169,9 +173,11 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Bean
     @Autowired
     public AuthenticationProvider daasUsernamePasswordAuthenticationProvider(IdentityProvider identityProvider,
+                                                                             LoginAttemptManager loginAttemptManager,
                                                                              TokenManager tokenManager) {
         UsernamePasswordAuthenticationProvider result = new UsernamePasswordAuthenticationProvider();
         result.setIdentityProvider(identityProvider);
+        result.setLoginAttemptManager(loginAttemptManager);
         result.setTokenManager(tokenManager);
         return result;
     }
@@ -242,6 +248,20 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
         FeatureConfigurer featureConfigurer = new FeatureConfigurer();
         tokenConfigurer.configure(featureConfigurer);
         return featureConfigurer;
+    }
+
+    @Bean
+    @Autowired
+    public LoginAttemptManager daasLoginAttemptManager(LoginAttemptProvider loginAttemptProvider) {
+        DefaultLoginAttemptManager result = new DefaultLoginAttemptManager();
+        result.setLoginAttemptProvider(loginAttemptProvider);
+        tokenConfigurer.configure(result);
+        return result;
+    }
+
+    @Bean
+    public LoginAttemptProvider daasDefaultLoginAttemptProvider() {
+        return new LoginAttemptProviderMemoryImpl();
     }
 
 }

@@ -34,11 +34,11 @@ public class AuthenticationFilter extends GenericFilterBean implements Ordered {
 
     private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
 
-    //@since 1.6
     private RequestMatcher urlRequestMatcher;
 
     private RequestMatcher ignoredUrlRequestMatcher;
 
+    //@since 1.6.0
     private FeatureConfigurer featureConfigurer;
 
     /**
@@ -159,7 +159,6 @@ public class AuthenticationFilter extends GenericFilterBean implements Ordered {
         return this.featureConfigurer.isEnabled(AuthenticationFeature.CORS) &&
                 "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
-
 
     @Override
     public void afterPropertiesSet() {

@@ -32,7 +32,7 @@ public class TokenProviderMongodbImpl implements TokenProvider<TokenEntity> {
     @Override
     public TokenEntity findByToken(String token) {
         logger.debug(String.format("Get token:%s", token));
-        return tokenEntityRepository.findByToken(token);
+        return tokenEntityRepository.findFirstByToken(token);
     }
     
     @Override

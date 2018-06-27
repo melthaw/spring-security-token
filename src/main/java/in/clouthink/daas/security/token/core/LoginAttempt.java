@@ -10,14 +10,30 @@ import java.util.List;
  */
 public interface LoginAttempt extends Serializable {
 
+    /**
+     * @return the user to do attempt login
+     */
     String getUsername();
 
-    int getAttemptCount();
+    /**
+     * @return how many times the user attempt login (goes failure)
+     */
+    short getAttempts();
 
-    int getAttemptLimit();
+    /**
+     * @return the expired time of login attempt (it's reset after reach the expired time)
+     */
+    Date getExpiredTime();
 
-    Date getLatestAttemptTime();
+    /**
+     * @return the latest active time of token (user accessed the protected
+     * resource with the token)
+     */
+    Date getLatestTime();
 
-    void reset();
+    /**
+     * increase attempt & update the latest time to current time
+     */
+    void increaseAttempt();
 
 }

@@ -13,9 +13,9 @@ import in.clouthink.daas.security.token.spi.impl.DefaultPasswordDigesterProvider
 /**
  */
 public class IdentityProviderMemoryImpl implements IdentityProvider<User> {
-    
+
     private PasswordDigesterProvider passwordDigesterProvider = new DefaultPasswordDigesterProvider();
-    
+
     @Override
     public User findByUsername(final String username) {
         return new User() {
@@ -23,37 +23,43 @@ public class IdentityProviderMemoryImpl implements IdentityProvider<User> {
             public String getId() {
                 return username;
             }
-            
+
             @Override
             public String getUsername() {
                 return username;
             }
-            
+
             @Override
             public String getPassword() {
                 PasswordDigester passwordDigester = passwordDigesterProvider.getPasswordDigester("MD5");
                 return passwordDigester.encode(username, null);
             }
-            
+
             @Override
             public boolean isEnabled() {
                 return true;
             }
-            
+
             @Override
             public boolean isExpired() {
                 return false;
             }
-            
+
             @Override
             public boolean isLocked() {
                 return false;
             }
-            
+
             @Override
             public List<Role> getRoles() {
                 return Arrays.asList(Role.DUMMY_ROLE);
             }
         };
     }
+
+    @Override
+    public User lock(String username) {
+        throw new UnsupportedOperationException();
+    }
+
 }

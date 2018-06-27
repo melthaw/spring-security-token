@@ -8,25 +8,25 @@ import java.util.ResourceBundle;
 /**
  */
 public class DefaultMessageProvider implements MessageProvider {
-    
+
     private Locale locale = Locale.ENGLISH;
-    
+
     private ResourceBundle rbEn = ResourceBundle.getBundle("daas_token_message",
                                                            Locale.ENGLISH);
-    
+
     private ResourceBundle rbZh = ResourceBundle.getBundle("daas_token_message",
                                                            Locale.CHINESE);
-    
+
     @Override
     public void setLocale(Locale locale) {
         this.locale = locale;
     }
-    
+
     @Override
     public String getMessage(String code) {
         if (locale == Locale.CHINESE || locale == Locale.CHINA
-            || locale == Locale.SIMPLIFIED_CHINESE
-            || locale == Locale.TRADITIONAL_CHINESE) {
+                || locale == Locale.SIMPLIFIED_CHINESE
+                || locale == Locale.TRADITIONAL_CHINESE) {
             return rbZh.getString(code);
         }
         else {
@@ -34,10 +34,10 @@ public class DefaultMessageProvider implements MessageProvider {
         }
     }
 
-    public static void main(String[] args) {
-        DefaultMessageProvider messageProvider = new DefaultMessageProvider();
-        messageProvider.setLocale(Locale.CHINESE);
-        System.out.print(messageProvider.getMessage(ErrorConstants.AUTHENTICATION_REQUIRED));
-    }
-    
+//    public static void main(String[] args) {
+//        DefaultMessageProvider messageProvider = new DefaultMessageProvider();
+//        messageProvider.setLocale(Locale.CHINESE);
+//        System.out.print(messageProvider.getMessage(ErrorConstants.AUTHENTICATION_REQUIRED));
+//    }
+
 }

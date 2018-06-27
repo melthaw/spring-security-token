@@ -3,11 +3,12 @@ package in.clouthink.daas.security.token.support.i18n;
 import java.util.Locale;
 
 /**
+ * The i18n message provider
  */
 public interface MessageProvider {
-    
-    public void setLocale(Locale locale);
-    
-    public String getMessage(String code);
-    
+
+    void setLocale(Locale locale);
+
+    String getMessage(String code);
+
 }

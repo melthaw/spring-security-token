@@ -10,26 +10,26 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 
 public class DefaultWebResponseExceptionTranslator implements
-                                                   WebResponseExceptionTranslator {
-                                                   
+        WebResponseExceptionTranslator {
+
     private MessageProvider messageProvider = new DefaultMessageProvider();
-    
+
     public DefaultWebResponseExceptionTranslator() {
     }
-    
+
     public DefaultWebResponseExceptionTranslator(MessageProvider messageProvider) {
         this.messageProvider = messageProvider;
     }
-    
+
     public void setMessageProvider(MessageProvider messageProvider) {
         this.messageProvider = messageProvider;
     }
-    
+
     public ResponseEntity<?> translate(Exception e) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Cache-Control", "no-store");
         headers.set("Pragma", "no-cache");
-        
+
         if (e instanceof UserNotFoundException) {
             return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.INVALID_USER_OR_PASSWORD,
                                                                  messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),
@@ -51,6 +51,18 @@ public class DefaultWebResponseExceptionTranslator implements
         if (e instanceof UserDisabledException) {
             return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.USER_IS_DISABLED,
                                                                  messageProvider.getMessage(ErrorConstants.USER_IS_DISABLED)),
+                                      headers,
+                                      HttpStatus.OK);
+        }
+
+        if (e instanceof LoginAttemptException) {
+            return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.LOGIN_ATTEMPT_FAILURE,
+                                                                 String.format(messageProvider.getMessage(ErrorConstants.LOGIN_ATTEMPT_FAILURE),
+                                                                               ((LoginAttemptException) e).getAttempts(),
+                                                                               ((LoginAttemptException) e).getMaxAttempts() -
+                                                                                       ((LoginAttemptException) e).getAttempts(),
+                                                                               ((LoginAttemptException) e).getAttemptTimeout() /
+                                                                                       (60 % 60 % 1000))),
                                       headers,
                                       HttpStatus.OK);
         }
@@ -115,7 +127,7 @@ public class DefaultWebResponseExceptionTranslator implements
                                       headers,
                                       HttpStatus.UNAUTHORIZED);
         }
-        
+
         if (e instanceof AccessDeniedException) {
             String message = e.getMessage();
             if (StringUtils.isEmpty(message)) {
@@ -126,10 +138,10 @@ public class DefaultWebResponseExceptionTranslator implements
                                       headers,
                                       HttpStatus.FORBIDDEN);
         }
-        
+
         return new ResponseEntity(WebResultWrapper.failedMap(e.getMessage()),
                                   headers,
                                   HttpStatus.OK);
     }
-    
+
 }

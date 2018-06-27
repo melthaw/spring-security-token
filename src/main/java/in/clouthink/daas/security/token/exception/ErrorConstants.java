@@ -23,5 +23,8 @@ public abstract class ErrorConstants {
     public static final String AUTHORIZATION_FAILED = "error.authorizationFailed";
     
     public static final String NO_PERMISSION = "error.noPermission";
-    
+
+    public static final String LOGIN_ATTEMPT_FAILURE = "error.loginAttemptFailure";
+
+
 }

@@ -6,6 +6,9 @@ import in.clouthink.daas.security.token.core.User;
 
 import java.util.List;
 
+/**
+ * @since 1.7.0
+ */
 public interface LoginAttemptProvider<T extends LoginAttempt> {
 
     void saveLoginAttempt(T loginAttempt);
