@@ -18,32 +18,49 @@ Thanks Spring Security. There are some useful APIs available for us in Spring Se
 
 # Usage
 
+So far the following version is available
+
+module name |	latest version
+---|---
+daas-token | 1.7.0
+
 ## Maven
 
-So far 1.7.0 is available 
-
+```xml
     <dependency>
         <groupId>in.clouthink.daas</groupId>
         <artifactId>daas-token</artifactId>
         <version>${daas.token.version}</version>
     </dependency>
+```
+## Gradle
+
+```gradle
+    compile "in.clouthink.daas:daas-token:${daas_token_version}"
+```
 
 ## Spring Configuration
 
 Use `@EnableToken` to get started 
 
+```java
     @Configuration
     @EnableToken    
     public class Application {}
+```
 
- 
-By default, the JVM memory-based token management is working for Daas-Token, `@Scheduled(cron = "0 0/10 * * * ?")` is triggered every 10 minutes to clean up the expired token. 
-So please enable the spring schedule feature if you does not change the default configuration.Otherwise , **out of memory** should be a big problem.
+By default, the JVM memory-based token management is working for Daas-Token, `@Scheduled(cron = "0 0/10 * * * ?")` is triggered every 10 minutes to clean up the expired token & login attempts. 
+So please enable the spring schedule feature if you does not change the default configuration.Otherwise , **out of memory** should be a big problem. 
 
+```java
     @Configuration
     @EnableScheduling
     @EnableToken
     public class Application {}
+```
+
+We recommend to use Redis to replace the default memory-based store to manage the token and login attempts.
+
 
 ## Customize
 
@@ -58,16 +75,18 @@ Implement the interface `TokenConfigurer` to customize the Daas-Token features
 
 Here is the sample 
 
+```java
     @Bean
     public TokenConfigurer myTokenConfigurer() {
         //TODO:create and return the TokenConfigurer instance here.
     }
+```
 
-Or you can extend the stub class `TokenConfigurerAdapter` which has been supply the empty implementation for `TokenConfigurer`,
-just override the methods you'd like to.
+Or you can extend the adapter class `TokenConfigurerAdapter` which supplies the dummy implementation for `TokenConfigurer` , just override the methods you'd like to.
 
 For example , we'd like to let the token only be alive for one hour.
 
+```java
     @Bean
     public TokenConfigurer myTokenConfigurer() {
         return new TokenConfigurerAdapter() {
@@ -77,9 +96,11 @@ For example , we'd like to let the token only be alive for one hour.
             }
         }
     }
+```
 
 Set the login process url:
 
+```java
     @Bean
     public TokenConfigurer myTokenConfigurer() {
         return new TokenConfigurerAdapter() {
@@ -89,10 +110,11 @@ Set the login process url:
             }
         }
     }
-    
+```    
 
 Set the logout process url:
 
+```java
     @Bean
     public TokenConfigurer myTokenConfigurer() {
         return new TokenConfigurerAdapter() {
@@ -102,9 +124,11 @@ Set the logout process url:
             }
         }
     }
+```
 
 Set the protected rest url:
 
+```java
     @Bean
     public TokenConfigurer myTokenConfigurer() {
         return new TokenConfigurerAdapter() {
@@ -121,9 +145,10 @@ Set the protected rest url:
             
         }
     }
+```
  
-The AuthenticationFilter is responsible to judge whether is user is authenticated or not.
-And the AuthorizationFilter is responsible to decide whether the user is allowed to access the protected url.
+The `AuthenticationFilter` is responsible to judge whether is user is authenticated or not.
+And the `AuthorizationFilter` is responsible to decide whether the user is allowed to access the protected url.
 Normally, keep the process url of the two filters be the same value.
 
 Now here goes to the step to define the ACL which is designed as RBAC , but not only RBAC. 
@@ -146,6 +171,7 @@ The Grant Rule is defined as expression, now we support the following two format
 For example:
 The user which's username is **TESTUSER** or owns the Role **TEST** can access the **/token/sample/helloworld** with the http **GET** method
 
+```java
     @Bean
     public TokenConfigurer myTokenConfigurer() {
         return new TokenConfigurerAdapter() {
@@ -160,8 +186,33 @@ The user which's username is **TESTUSER** or owns the Role **TEST** can access t
             
         }
     }
-             
-             
+```           
+
+## Advanced Features
+
+`AuthenticationFeature` is designed to control the authentication behaviour.  Here are the available features.
+
+feature | default value | description
+---|---|--
+CORS_SUPPORT | false | CORS is not support by default, please enable it if required.
+STRICT_TOKEN | true |  The token must be supplied in http header.
+IGNORE_PRE_AUTHN_ERROR | false | When the request not pass the `PreAuthenticationFilter` authentication,  continue the filter chain if set it to false. 
+LOGIN_ATTEMPT_ENABLED | false |  If the user attempts login and goes failure to the defined max times, the user will be locked. 
+
+Here is the sample to enable or disable the features
+
+```java
+
+    @Bean
+    public TokenConfigurer tokenConfigurer() {
+        return new TokenConfigurerAdapter() {
+            @Override
+            public void configure(FeatureConfigurer featureConfigurer) {
+                featureConfigurer.enable(AuthenticationFeature.LOGIN_ATTEMPT_ENABLED);
+            }
+        }
+    }
+```
 
 ## Redis 
 
@@ -169,6 +220,7 @@ As mentioned before, the JVM memory based token management is used by default, b
 
 First, enabled the spring data redis feature as follow:
 
+```java
     @Value("${redis.host}")
     private String redisHost;
     
@@ -189,21 +241,35 @@ First, enabled the spring data redis feature as follow:
         result.setKeySerializer(new StringRedisSerializer(Charset.forName("UTF-8")));
         return result;
     }
+```
      
 Then create the bean `in.clouthink.daas.security.token.spi.impl.redis.TokenProviderRedisImpl`.Please remember to add `@Primary` annotation with `@Bean`,
 it will take the place of the default implementation
 
+```java
     @Primary
     @Bean
-    public TokenProvider redisTokenProvider1() {
+    public TokenProvider redisTokenProvider() {
         return new TokenProviderRedisImpl();
     }
+```
+
+Or replace the default `LoginAttemptProviderMemoryImpl` with Redis impl.
+
+```java
+    @Primary
+    @Bean
+    public LoginAttemptProvider redisLoginAttemptProvider() {
+        return new LoginAttemptProviderRedisImpl();
+    }
+```
 
 
 ## Memcached
 
 Same as the way of redis token management, using memcached as the token store is easy to configure. We use the [https://github.com/couchbase/spymemcached](spymemcached) as the memcached java client.
     
+```java
     @Value("${memcached.host}")
     private String memcachedHost;
     
@@ -216,21 +282,35 @@ Same as the way of redis token management, using memcached as the token store is
         result.setServers(memcachedHost + ":" + memcachedPort);
         return result;
     }
+```
 
 Then create the bean `in.clouthink.daas.security.token.spi.impl.memcached.TokenProviderMemcachedImpl`.Please remember to add `@Primary` annotation with `@Bean`,
 it will take the place of the default implementation
 
+```java
     @Primary
     @Bean
     public TokenProvider memcachedTokenProvider() {
         return new TokenProviderMemcachedImpl();
     }
+```
+
+Or replace the default `LoginAttemptProviderMemoryImpl` with Memcached impl.
+
+```java
+    @Primary
+    @Bean
+    public LoginAttemptProvider memcachedLoginAttemptProvider() {
+        return new LoginAttemptProviderMemcachedImpl();
+    }
+```
 
 
 ## Mongodb
 
 Mongodb is one of the most popular nosql data store , we support to save the token back to mongodb , here is the configuration
 
+```java
     @Value("${mongodb.host}")
     private String mongodbHost;
     
@@ -251,16 +331,29 @@ Mongodb is one of the most popular nosql data store , we support to save the tok
     public MongoTemplate mongoTemplate() throws Exception {
         return new MongoTemplate(mongoDbFactory());
     }
-
+```
 
 Then create the bean `in.clouthink.daas.security.token.spi.impl.mongodb.TokenProviderMongodbImpl`.Please remember to add `@Primary` annotation with `@Bean`,
 it will take the place of the default implementation
     
+```java
     @Primary
     @Bean
     public TokenProvider mongodbTokenProvider1() {
         return new TokenProviderMongodbImpl();
     }
+```
+
+
+Or replace the default `LoginAttemptProviderMemoryImpl` with Mongodb impl.
+
+```java
+    @Primary
+    @Bean
+    public LoginAttemptProvider mongodbLoginAttemptProvider() {
+        return new LoginAttemptProviderMongodbImpl();
+    }
+```
 
 
 ## Composite memcached and mongodb
@@ -269,6 +362,7 @@ Redis is good choose to make the data cache-able and persist-able, but you can c
 It's very easy to configure DaaS-Token to support this feature.Create the bean `in.clouthink.daas.security.token.spi.impl.CompositeTokenProvider` and
 add `@Primary` annotation to the compositeTokenProvider.
 
+```java
     @Bean
     public TokenProvider memcachedTokenProvider() {
         return new TokenProviderMemcachedImpl();
@@ -284,9 +378,7 @@ add `@Primary` annotation to the compositeTokenProvider.
     public TokenProvider compositeTokenProvider() {
         return new CompositeTokenProvider(memcachedTokenProvider(), mongodbTokenProvider1());
     }
-    
-
-
+```
 
 ## Advanced 
 
@@ -297,6 +389,7 @@ The SPI is available for the advanced user to adapt their own implementation, ev
 
 Just supply your implementation
 
+```java
     public interface TokenProvider<T extends Token> {
         
         public void saveToken(T token);
@@ -306,12 +399,14 @@ Just supply your implementation
         public void revokeToken(T token);
         
     }
+```
 
 ### Customize the authorization
 
 Maybe you'd like to save the access control list back to the data store , and want to authorize the access request based on the dynamic data not hard-coded configuration.
 The SPI supplies the extension point if you want customize the authorization behaviors.
 
+```java
     public interface AclProvider<T extends Acl> {
         
         public List<T> listAll();
@@ -324,6 +419,7 @@ The SPI supplies the extension point if you want customize the authorization beh
         public AccessResponse vote(T t, String grantRule);
         
     }
+```
     
 Please refer to the default implementations by DaaS-Token
     
@@ -337,6 +433,7 @@ Please refer to the default implementations by DaaS-Token
 Once the user passed the authentication , the token response is sent back to the user. 
 And then you can access the protected url resource with the token in the http header.
 
+```java
     MultiValueMap<String, String> bodyMap = new LinkedMultiValueMap<String, String>();
     bodyMap.add("username", "your username");
     bodyMap.add("password", "your password");
@@ -364,14 +461,15 @@ And then you can access the protected url resource with the token in the http he
                                                                 HttpMethod.GET,
                                                                 request,
                                                                 String.class);   
-
+```
 
 # Appendix : error code explain 
 
 Error response format (JSON) for example:
 
+```json
     {"message":"The token is disabled","succeed":false,"errorCode":"error.tokenIsDisabled"}
-    
+```    
 Explain
     
 error code | error message | http status code | description
@@ -392,6 +490,7 @@ error.loginLocked | Wrong %d times. User is locked. | | since 1.7.0
 ## Appendix : web.xml filter configuration sample
 
 
+```xml
     <filter>
         <filter-name>daasTokenLoginEndpoint</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -482,3 +581,6 @@ error.loginLocked | Wrong %d times. User is locked. | | since 1.7.0
         <filter-name>daasTokenAuthorizationFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
+```
+
+

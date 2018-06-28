@@ -176,7 +176,7 @@ public class AuthorizationFilter extends GenericFilterBean implements Ordered {
     }
 
     private boolean isPreFlightRequest(HttpServletRequest request) {
-        return this.featureConfigurer.isEnabled(AuthenticationFeature.CORS) &&
+        return this.featureConfigurer.isEnabled(AuthenticationFeature.CORS_SUPPORT) &&
                 "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 

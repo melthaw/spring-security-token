@@ -167,7 +167,7 @@ public class PreAuthenticationFilter extends GenericFilterBean implements Ordere
     }
 
     private boolean isPreFlightRequest(HttpServletRequest request) {
-        return this.featureConfigurer.isEnabled(AuthenticationFeature.CORS) &&
+        return this.featureConfigurer.isEnabled(AuthenticationFeature.CORS_SUPPORT) &&
                 "OPTIONS".equalsIgnoreCase(request.getMethod());
     }
 

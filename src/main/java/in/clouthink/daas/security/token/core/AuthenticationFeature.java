@@ -10,7 +10,7 @@ public enum AuthenticationFeature implements ConfigFeature {
      * <p>
      * And false as default value.
      */
-    CORS(false),
+    CORS_SUPPORT(false),
 
     /**
      * Feature that determines whether token is required or not in http header .
