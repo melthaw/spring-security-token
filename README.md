@@ -45,6 +45,36 @@ daas-token | 1.4.6 | federation authn
     compile "in.clouthink.daas:daas-token:${daas_token_version}"
 ```
 
+
+## Features Customization
+
+`AuthenticationFeature` is designed to control the authentication behaviour.  Here are the available features.
+
+feature | default value | description
+---|---|--
+CORS_SUPPORT | false | CORS is not support by default, please enable it if required.
+STRICT_TOKEN | true |  The token must be supplied in http header.
+IGNORE_PRE_AUTHN_ERROR | false | When the request not pass the `PreAuthenticationFilter` authentication,  continue the filter chain if set it to false. 
+LOGIN_ATTEMPT_ENABLED | false |  If the user attempts login and goes failure to the defined max times, the user will be locked. 
+CAPTCHA_ENABLED | false | If enabled, the user must pass the captcha verify while login
+POST_LOGIN_ONLY | true | Only the HTTP POST login is allowed if enabled.
+
+Here is the sample to enable or disable the features
+
+```java
+
+    @Bean
+    public TokenConfigurer tokenConfigurer() {
+        return new TokenConfigurerAdapter() {
+            @Override
+            public void configure(FeatureConfigurer featureConfigurer) {
+                featureConfigurer.enable(AuthenticationFeature.LOGIN_ATTEMPT_ENABLED);
+            }
+        }
+    }
+```
+
+
 ## Spring Configuration
 
 Use `@EnableToken` to get started 
@@ -193,32 +223,6 @@ The user which's username is **TESTUSER** or owns the Role **TEST** can access t
         }
     }
 ```           
-
-## Advanced Features
-
-`AuthenticationFeature` is designed to control the authentication behaviour.  Here are the available features.
-
-feature | default value | description
----|---|--
-CORS_SUPPORT | false | CORS is not support by default, please enable it if required.
-STRICT_TOKEN | true |  The token must be supplied in http header.
-IGNORE_PRE_AUTHN_ERROR | false | When the request not pass the `PreAuthenticationFilter` authentication,  continue the filter chain if set it to false. 
-LOGIN_ATTEMPT_ENABLED | false |  If the user attempts login and goes failure to the defined max times, the user will be locked. 
-
-Here is the sample to enable or disable the features
-
-```java
-
-    @Bean
-    public TokenConfigurer tokenConfigurer() {
-        return new TokenConfigurerAdapter() {
-            @Override
-            public void configure(FeatureConfigurer featureConfigurer) {
-                featureConfigurer.enable(AuthenticationFeature.LOGIN_ATTEMPT_ENABLED);
-            }
-        }
-    }
-```
 
 ## Redis 
 
