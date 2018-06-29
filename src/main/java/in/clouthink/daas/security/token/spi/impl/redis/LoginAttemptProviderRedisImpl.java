@@ -21,32 +21,32 @@ public class LoginAttemptProviderRedisImpl implements LoginAttemptProvider<Login
 
     @Override
     public void saveLoginAttempt(LoginAttempt loginAttempt) {
-        logger.debug(String.format("Put LA_%s expiredAt:%s",
+        logger.debug(String.format("Put LOGINATTEMP:%s expiredAt:%s",
                                    loginAttempt.getUsername(),
                                    loginAttempt.getExpiredTime()));
 
         // put the token to cache
-        loginAttemptRedisTemplate.opsForHash().put("LA_" + loginAttempt.getUsername(),
+        loginAttemptRedisTemplate.opsForHash().put("LOGINATTEMP:" + loginAttempt.getUsername(),
                                                    loginAttempt.getUsername(),
                                                    loginAttempt);
-        loginAttemptRedisTemplate.expireAt("LA_" + loginAttempt.getUsername(),
+        loginAttemptRedisTemplate.expireAt("LOGINATTEMP:" + loginAttempt.getUsername(),
                                            loginAttempt.getExpiredTime());
 
     }
 
     @Override
     public LoginAttempt findByUsername(String username) {
-        logger.debug(String.format("Get LA_%s", username));
-        return (LoginAttempt) loginAttemptRedisTemplate.opsForHash().get("LA_" + username, username);
+        logger.debug(String.format("Get LOGINATTEMP:%s", username));
+        return (LoginAttempt) loginAttemptRedisTemplate.opsForHash().get("LOGINATTEMP:" + username, username);
     }
 
     @Override
     public void revokeLoginAttempt(LoginAttempt loginAttempt) {
-        logger.debug(String.format("Del LA_%s", loginAttempt));
+        logger.debug(String.format("Del LOGINATTEMP:%s", loginAttempt));
         if (loginAttempt == null) {
             return;
         }
-        loginAttemptRedisTemplate.opsForHash().delete("LA_" + loginAttempt.getUsername(),
+        loginAttemptRedisTemplate.opsForHash().delete("LOGINATTEMP:" + loginAttempt.getUsername(),
                                                       loginAttempt.getUsername());
     }
 

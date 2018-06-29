@@ -28,46 +28,46 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
 
     @Override
     public void saveToken(Token token) {
-        logger.debug(String.format("Put T:%s expiredAt:%s",
+        logger.debug(String.format("Put TOKEN:%s expiredAt:%s",
                                    token.getToken(),
                                    token.getExpiredDate()));
         // put the token to cache
-        redisTemplateToken.opsForHash().put("T:" + token.getToken(),
+        redisTemplateToken.opsForHash().put("TOKEN:" + token.getToken(),
                                             token.getToken(),
                                             token);
-        redisTemplateToken.expireAt("T:" + token.getToken(),
+        redisTemplateToken.expireAt("TOKEN:" + token.getToken(),
                                     token.getExpiredDate());
         // maintain the user & token relationship
         if (token.getOwner() == null) {
             return;
         }
-        redisTemplateSet.opsForSet().add("U:" + token.getOwner().getUsername(),
+        redisTemplateSet.opsForSet().add("USER:" + token.getOwner().getUsername(),
                                          token.getToken());
         // update the expired date
-        redisTemplateToken.expireAt("U:" + token.getOwner().getUsername(),
+        redisTemplateToken.expireAt("USER:" + token.getOwner().getUsername(),
                                     token.getExpiredDate());
     }
 
     @Override
     public Token findByToken(String token) {
-        logger.debug(String.format("Get T:%s", token));
-        return (Token) redisTemplateToken.opsForHash().get("T:" + token, token);
+        logger.debug(String.format("Get TOKEN:%s", token));
+        return (Token) redisTemplateToken.opsForHash().get("TOKEN:" + token, token);
     }
 
     @Override
     public void revokeToken(Token token) {
-        logger.debug(String.format("Del T:%s", token));
+        logger.debug(String.format("Del TOKEN:%s", token));
         if (token == null) {
             return;
         }
-        redisTemplateToken.opsForHash().delete("T:" + token.getToken(),
+        redisTemplateToken.opsForHash().delete("TOKEN:" + token.getToken(),
                                                token.getToken());
         // remove the user & token relationship
         if (token.getOwner() == null) {
             return;
         }
         redisTemplateSet.opsForSet()
-                        .remove("U:" + token.getOwner().getUsername(),
+                        .remove("USER:" + token.getOwner().getUsername(),
                                 token.getToken());
     }
 
@@ -79,7 +79,7 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         List<Token> result = new ArrayList<Token>();
 
         Set<String> tokens = redisTemplateSet.opsForSet()
-                                             .members("U:"
+                                             .members("USER:"
                                                               + user.getUsername());
         for (String token : tokens) {
             Token t = findByToken(token);

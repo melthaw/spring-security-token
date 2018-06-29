@@ -17,7 +17,7 @@ public class CaptchaProviderRedisImpl implements CaptchaProvider<Captcha> {
     public static final Log logger = LogFactory.getLog(CaptchaProviderRedisImpl.class);
 
     @Autowired
-    private RedisTemplate<String, Captcha> redisTemplateCaptcha;
+    private RedisTemplate<String, Captcha> captchaRedisTemplate;
 
     @Override
     public void saveCaptcha(Captcha captcha) {
@@ -25,10 +25,10 @@ public class CaptchaProviderRedisImpl implements CaptchaProvider<Captcha> {
                                    captcha.getValue(),
                                    captcha.getExpiredTime()));
         // put the captcha to cache
-        redisTemplateCaptcha.opsForHash().put("CAPTCHA:" + captcha.getId(),
+        captchaRedisTemplate.opsForHash().put("CAPTCHA:" + captcha.getId(),
                                               captcha.getId(),
                                               captcha);
-        redisTemplateCaptcha.expireAt("CAPTCHA:" + captcha.getId(),
+        captchaRedisTemplate.expireAt("CAPTCHA:" + captcha.getId(),
                                       captcha.getExpiredTime());
 
     }
@@ -36,7 +36,7 @@ public class CaptchaProviderRedisImpl implements CaptchaProvider<Captcha> {
     @Override
     public Captcha findCaptcha(String captchaId) {
         logger.debug(String.format("Get CAPTCHA:%s", captchaId));
-        return (Captcha) redisTemplateCaptcha.opsForHash().get("CAPTCHA:" + captchaId, captchaId);
+        return (Captcha) captchaRedisTemplate.opsForHash().get("CAPTCHA:" + captchaId, captchaId);
     }
 
     @Override
@@ -45,7 +45,7 @@ public class CaptchaProviderRedisImpl implements CaptchaProvider<Captcha> {
         if (captcha == null) {
             return;
         }
-        redisTemplateCaptcha.opsForHash().delete("CAPTCHA:" + captcha.getId(),
+        captchaRedisTemplate.opsForHash().delete("CAPTCHA:" + captcha.getId(),
                                                  captcha.getId());
     }
 
