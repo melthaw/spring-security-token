@@ -9,31 +9,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * The default authn mgr impl
  */
-public class DefaultAuthenticationManager implements
-                                         AuthenticationManager,
-                                         InitializingBean {
-    
+public class DefaultAuthenticationManager implements AuthenticationManager, InitializingBean {
+
     private List<AuthenticationProvider> providers = new ArrayList<AuthenticationProvider>();
-    
+
     public List<AuthenticationProvider> getProviders() {
         return providers;
     }
-    
+
     public void setProviders(List<AuthenticationProvider> providers) {
         this.providers = providers;
     }
-    
+
     public void addProvider(AuthenticationProvider provider) {
         this.providers.add(provider);
     }
-    
+
     public void addProviders(AuthenticationProvider... providers) {
         for (AuthenticationProvider provider : providers) {
             this.providers.add(provider);
         }
     }
-    
+
     @Override
     public Authentication login(AuthenticationRequest request) {
         if (request == null) {
@@ -46,7 +45,7 @@ public class DefaultAuthenticationManager implements
         }
         return null;
     }
-    
+
     @Override
     public void logout(Authentication authentication) {
         if (authentication == null) {
@@ -56,7 +55,7 @@ public class DefaultAuthenticationManager implements
             provider.revoke(authentication);
         }
     }
-    
+
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(providers, "providers must be specified");

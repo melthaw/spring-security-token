@@ -93,7 +93,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
                                                               FeatureConfigurer featureConfigurer,
                                                               MessageProvider messageProvider) {
         AuthenticationFilter authenticationFilter = new AuthenticationFilter();
-        authenticationFilter.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+        authenticationFilter.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(messageProvider));
         authenticationFilter.setFeatureConfigurer(featureConfigurer);
         tokenConfigurer.configure(authenticationFilter);
         return authenticationFilter;
@@ -102,15 +102,15 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Bean
     @Autowired
     @DependsOn({"daasDefaultAuthenticationManager", "daasFeatureConfigurer"})
-    public PreAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
-                                                                    FeatureConfigurer featureConfigurer,
-                                                                    MessageProvider messageProvider) {
-        PreAuthenticationFilter preAuthenticationFilter = new PreAuthenticationFilter();
-        preAuthenticationFilter.setAuthenticationManager(authenticationManager);
-        preAuthenticationFilter.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
-        preAuthenticationFilter.setFeatureConfigurer(featureConfigurer);
-        tokenConfigurer.configure(preAuthenticationFilter);
-        return preAuthenticationFilter;
+    public TokenAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
+                                                                      FeatureConfigurer featureConfigurer,
+                                                                      MessageProvider messageProvider) {
+        TokenAuthenticationFilter tokenAuthenticationFilter = new TokenAuthenticationFilter();
+        tokenAuthenticationFilter.setAuthenticationManager(authenticationManager);
+        tokenAuthenticationFilter.setAuthorizationFailureHandler(new DefaultAuthorizationFailureHandler(messageProvider));
+        tokenAuthenticationFilter.setFeatureConfigurer(featureConfigurer);
+        tokenConfigurer.configure(tokenAuthenticationFilter);
+        return tokenAuthenticationFilter;
     }
 
     @Bean

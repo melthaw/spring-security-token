@@ -17,9 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-public class PreAuthenticationFilter extends GenericFilterBean implements Ordered {
+public class TokenAuthenticationFilter extends GenericFilterBean implements Ordered {
 
-    private static final Log logger = LogFactory.getLog(PreAuthenticationFilter.class);
+    private static final Log logger = LogFactory.getLog(TokenAuthenticationFilter.class);
 
     //@since 1.2.0
     private int order = Ordered.HIGHEST_PRECEDENCE + 3;
@@ -35,37 +35,22 @@ public class PreAuthenticationFilter extends GenericFilterBean implements Ordere
     //@since 1.6.0
     private FeatureConfigurer featureConfigurer;
 
-    /**
-     *
-     */
-    public PreAuthenticationFilter() {
+    public TokenAuthenticationFilter() {
         this.urlRequestMatcher = new AntPathRequestMatcher("/api**");
     }
 
-    /**
-     *
-     */
-    public PreAuthenticationFilter(String filterProcessesUrl) {
+    public TokenAuthenticationFilter(String filterProcessesUrl) {
         this.urlRequestMatcher = new AntPathRequestMatcher(filterProcessesUrl);
     }
 
-    /**
-     *
-     */
-    public PreAuthenticationFilter(RequestMatcher urlRequestMatcher) {
+    public TokenAuthenticationFilter(RequestMatcher urlRequestMatcher) {
         this.urlRequestMatcher = urlRequestMatcher;
     }
 
-    /**
-     * @param order the order to set
-     */
     public void setOrder(int order) {
         this.order = order;
     }
 
-    /**
-     * @return the order
-     */
     @Override
     public int getOrder() {
         return this.order;
@@ -119,16 +104,16 @@ public class PreAuthenticationFilter extends GenericFilterBean implements Ordere
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
         if (isUrlProcessingMatched(request, response) && !isPreFlightRequest(request)) {
-            logger.trace("doPreAuthentication matched");
-            doPreAuthentication(request, response, chain);
+            logger.trace("doTokenAuthentication matched");
+            doTokenAuthentication(request, response, chain);
         }
         else {
-            logger.trace("doPreAuthentication un-matched, skip it");
+            logger.trace("doTokenAuthentication un-matched, skip it");
             chain.doFilter(request, response);
         }
     }
 
-    private void doPreAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    private void doTokenAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         logger.trace("doPreAuthentication start");
         try {

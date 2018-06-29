@@ -14,17 +14,18 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * The redis crud for token.
  */
 public class TokenProviderRedisImpl implements TokenProvider<Token> {
-    
+
     public static final Log logger = LogFactory.getLog(TokenProviderRedisImpl.class);
-    
+
     @Autowired
     private RedisTemplate<String, Token> redisTemplateToken;
-    
+
     @Autowired
     private RedisTemplate<String, String> redisTemplateSet;
-    
+
     @Override
     public void saveToken(Token token) {
         logger.debug(String.format("Put T:%s expiredAt:%s",
@@ -46,13 +47,13 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         redisTemplateToken.expireAt("U:" + token.getOwner().getUsername(),
                                     token.getExpiredDate());
     }
-    
+
     @Override
     public Token findByToken(String token) {
         logger.debug(String.format("Get T:%s", token));
         return (Token) redisTemplateToken.opsForHash().get("T:" + token, token);
     }
-    
+
     @Override
     public void revokeToken(Token token) {
         logger.debug(String.format("Del T:%s", token));
@@ -69,17 +70,17 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
                         .remove("U:" + token.getOwner().getUsername(),
                                 token.getToken());
     }
-    
+
     @Override
     public List<Token> findByUser(User user) {
         if (user == null) {
             return null;
         }
         List<Token> result = new ArrayList<Token>();
-        
+
         Set<String> tokens = redisTemplateSet.opsForSet()
                                              .members("U:"
-                                                      + user.getUsername());
+                                                              + user.getUsername());
         for (String token : tokens) {
             Token t = findByToken(token);
             if (t != null) {
@@ -88,5 +89,5 @@ public class TokenProviderRedisImpl implements TokenProvider<Token> {
         }
         return result;
     }
-    
+
 }

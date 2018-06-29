@@ -10,49 +10,46 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class DefaultTokenManager implements
-                                 TokenManager,
-                                 TokenLifeSupport,
-                                 InitializingBean {
-                                 
+public class DefaultTokenManager implements TokenManager, TokenOptions, InitializingBean {
+
     private TokenProvider tokenProvider;
-    
+
     private short maxAllowedTokenPerUser = 3;
-    
+
     private long tokenTimeout = 60 * 60 * 1000;
-    
+
     private long refreshTokenInteval = 3 * 60 * 1000;
-    
+
     private boolean allowedMultiTokens = true;
-    
+
     public DefaultTokenManager() {
     }
-    
+
     public long getTokenTimeout() {
         return tokenTimeout;
     }
-    
+
     public void setTokenTimeout(long tokenTimeout) {
         this.tokenTimeout = tokenTimeout;
     }
-    
+
     public long getRefreshTokenInteval() {
         return refreshTokenInteval;
     }
-    
+
     public void setRefreshTokenInteval(long refreshTokenInteval) {
         this.refreshTokenInteval = refreshTokenInteval;
     }
-    
+
     @Autowired
     public TokenProvider getTokenProvider() {
         return tokenProvider;
     }
-    
+
     public void setTokenProvider(TokenProvider tokenProvider) {
         this.tokenProvider = tokenProvider;
     }
-    
+
     @Override
     public void refreshToken(Token token) {
         if (null == token.getLatestTime()) {
@@ -60,7 +57,7 @@ public class DefaultTokenManager implements
             tokenProvider.saveToken(token);
             return;
         }
-        
+
         long lastTime = token.getLatestTime().getTime();
         long currentTimeMillis = System.currentTimeMillis();
         if ((currentTimeMillis - lastTime) > refreshTokenInteval) {
@@ -68,7 +65,7 @@ public class DefaultTokenManager implements
             tokenProvider.saveToken(token);
         }
     }
-    
+
     @Override
     public Token createToken(User owner) {
         if (!allowedMultiTokens) {
@@ -80,7 +77,7 @@ public class DefaultTokenManager implements
                         @Override
                         public int compare(Token o1, Token o2) {
                             if (o1.getExpiredDate() != null
-                                && o2.getExpiredDate() != null) {
+                                    && o2.getExpiredDate() != null) {
                                 long o1expiredTimestamp = o1.getExpiredDate()
                                                             .getTime();
                                 long o2expiredTimestamp = o2.getExpiredDate()
@@ -89,12 +86,12 @@ public class DefaultTokenManager implements
                                     return 0;
                                 }
                                 return o1expiredTimestamp > o2expiredTimestamp ? -1
-                                                                               : 1;
+                                        : 1;
                             }
                             return 0;
                         }
                     });
-                    
+
                     for (int i = 0; i < existedTokenCount; i++) {
                         Token token = tokens.get(i);
                         if (i < (maxAllowedTokenPerUser - 1)) {
@@ -104,7 +101,7 @@ public class DefaultTokenManager implements
                         else {
                             tokenProvider.revokeToken(token);
                         }
-                        
+
                     }
                 }
                 else {
@@ -115,12 +112,12 @@ public class DefaultTokenManager implements
                 }
             }
         }
-        
+
         Token token = TokenEntity.create(owner, tokenTimeout);
         tokenProvider.saveToken(token);
         return token;
     }
-    
+
     @Override
     public Token findToken(String token) {
         Token result = tokenProvider.findByToken(token);
@@ -134,27 +131,27 @@ public class DefaultTokenManager implements
         }
         return result;
     }
-    
+
     @Override
     public void revokeToken(String token) {
         tokenProvider.revokeToken(findToken(token));
     }
-    
+
     @Override
     public boolean isMultiTokensAllowed() {
         return this.allowedMultiTokens;
     }
-    
+
     @Override
     public void enableMultiTokens() {
         this.allowedMultiTokens = true;
     }
-    
+
     @Override
     public void disableMultiTokens() {
         this.allowedMultiTokens = false;
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(tokenProvider);

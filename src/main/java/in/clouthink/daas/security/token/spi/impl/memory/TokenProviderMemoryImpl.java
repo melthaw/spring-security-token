@@ -10,6 +10,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Simple store the token in memory.
+ */
 public class TokenProviderMemoryImpl implements TokenProvider<Token> {
 
     public static final Log logger = LogFactory.getLog(TokenProviderMemoryImpl.class);

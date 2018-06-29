@@ -10,14 +10,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 /**
+ * The mongodb repository for token entity
  */
 public class TokenProviderMongodbImpl implements TokenProvider<TokenEntity> {
-    
+
     public static final Log logger = LogFactory.getLog(TokenProviderMongodbImpl.class);
-    
+
     @Autowired
     private TokenEntityRepository tokenEntityRepository;
-    
+
     @Override
     public void saveToken(TokenEntity token) {
         logger.debug(String.format("Put token:%s expiredAt:%s",
@@ -28,13 +29,13 @@ public class TokenProviderMongodbImpl implements TokenProvider<TokenEntity> {
         }
         tokenEntityRepository.save(token);
     }
-    
+
     @Override
     public TokenEntity findByToken(String token) {
         logger.debug(String.format("Get token:%s", token));
         return tokenEntityRepository.findFirstByToken(token);
     }
-    
+
     @Override
     public void revokeToken(TokenEntity token) {
         logger.debug(String.format("Del token:%s", token));
@@ -43,7 +44,7 @@ public class TokenProviderMongodbImpl implements TokenProvider<TokenEntity> {
         }
         tokenEntityRepository.delete(token);
     }
-    
+
     @Override
     public List<TokenEntity> findByUser(User user) {
         if (user == null) {
@@ -51,5 +52,5 @@ public class TokenProviderMongodbImpl implements TokenProvider<TokenEntity> {
         }
         return tokenEntityRepository.findByOwnerId(user.getId());
     }
-    
+
 }

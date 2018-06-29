@@ -1,7 +1,7 @@
 package in.clouthink.daas.security.token.core;
 
 /**
- * @since 1.6
+ * @since 1.6.0
  */
 public enum AuthenticationFeature implements ConfigFeature {
 
@@ -30,8 +30,28 @@ public enum AuthenticationFeature implements ConfigFeature {
      * Feature that determines whether lock the user when user login failed and count to the max attempt.
      * <p>
      * And false as default value.
+     *
+     * @since 1.7.0
      */
-    LOGIN_ATTEMPT_ENABLED(false);
+    LOGIN_ATTEMPT_ENABLED(false),
+
+    /**
+     * Feature that determines whether user should pass the captcha verify before authentication.
+     * <p>
+     * And false as default value.
+     *
+     * @since 1.8.0
+     */
+    CAPTCHA_ENABLED(false),
+
+    /**
+     * Feature that determines whether post the login request only or not ( GET & PUT allowed if not)
+     * <p>
+     * And true as default value.
+     *
+     * @since 1.8.0
+     */
+    POST_LOGIN_ONLY(true);
 
     private final boolean _defaultState;
     private final int _mask;

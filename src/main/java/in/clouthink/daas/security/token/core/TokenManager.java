@@ -1,6 +1,6 @@
 package in.clouthink.daas.security.token.core;
 
-public interface TokenManager extends TokenLifeSupport {
+public interface TokenManager extends TokenOptions {
 
     void refreshToken(Token token);
 

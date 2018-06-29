@@ -1,10 +1,12 @@
 package in.clouthink.daas.security.token.core;
 
 /**
+ * LoginAttemptManager
+ *
  * @author dz
  * @since 1.7.0
  */
-public interface LoginAttemptManager extends LoginAttemptStrategySupport {
+public interface LoginAttemptManager extends LoginAttemptOptions {
 
     /**
      * Init login attempt to specified username

@@ -1,10 +1,12 @@
 package in.clouthink.daas.security.token.core;
 
 /**
+ * LoginAttemptOptions
+ *
  * @auther dz
  * @since 1.7.0
  */
-public interface LoginAttemptStrategySupport {
+public interface LoginAttemptOptions {
 
     /**
      * @return

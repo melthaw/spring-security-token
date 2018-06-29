@@ -30,9 +30,9 @@ public class AuthenticationFilter extends GenericFilterBean implements Ordered {
     private static final Log logger = LogFactory.getLog(AuthenticationFilter.class);
 
     //@since 1.2
-    private int order = Ordered.HIGHEST_PRECEDENCE + 4;
+    private int order = Ordered.HIGHEST_PRECEDENCE + 5;
 
-    private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
+    private AuthenticationFailureHandler authenticationFailureHandler = new DefaultAuthenticationFailureHandler();
 
     private RequestMatcher urlRequestMatcher;
 
@@ -108,12 +108,13 @@ public class AuthenticationFilter extends GenericFilterBean implements Ordered {
         this.ignoredUrlRequestMatcher = excludingUrlRequestMatcher;
     }
 
-    public AuthorizationFailureHandler getAuthorizationFailureHandler() {
-        return authorizationFailureHandler;
+    public AuthenticationFailureHandler getAuthenticationFailureHandler() {
+        return authenticationFailureHandler;
     }
 
-    public void setAuthorizationFailureHandler(AuthorizationFailureHandler authorizationFailureHandler) {
-        this.authorizationFailureHandler = authorizationFailureHandler;
+    public void setAuthenticationFailureHandler(
+            AuthenticationFailureHandler authenticationFailureHandler) {
+        this.authenticationFailureHandler = authenticationFailureHandler;
     }
 
     @Override
@@ -142,7 +143,7 @@ public class AuthenticationFilter extends GenericFilterBean implements Ordered {
             }
         } catch (Exception e) {
             logger.error(e, e);
-            authorizationFailureHandler.handle(request, response, e);
+            authenticationFailureHandler.handle(request, response, e);
             return;
         }
         chain.doFilter(request, response);

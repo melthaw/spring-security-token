@@ -1,8 +1,9 @@
 package in.clouthink.daas.security.token.core;
 
 /**
+ * TokenOptions
  */
-public interface TokenLifeSupport {
+public interface TokenOptions {
 
     /**
      * @param timeout milli seconds

@@ -12,56 +12,52 @@ import org.springframework.http.ResponseEntity;
 /**
  */
 public class DefaultAuthenticationFailureHandler implements
-                                                AuthenticationFailureHandler {
-    
-    private WebResponseExceptionTranslator translater;
-    
+        AuthenticationFailureHandler {
+
+    private WebResponseExceptionTranslator translator;
+
     private HttpResponseRenderer renderer = new HttpResponseJsonRenderer();
-    
+
     public DefaultAuthenticationFailureHandler() {
-        translater = new DefaultWebResponseExceptionTranslator();
+        translator = new DefaultWebResponseExceptionTranslator();
     }
-    
+
     public DefaultAuthenticationFailureHandler(MessageProvider messageProvider) {
-        translater = new DefaultWebResponseExceptionTranslator(messageProvider);
+        translator = new DefaultWebResponseExceptionTranslator(messageProvider);
     }
-    
-    public WebResponseExceptionTranslator getTranslater() {
-        return translater;
+
+    public WebResponseExceptionTranslator getTranslator() {
+        return translator;
     }
-    
-    public void setTranslater(WebResponseExceptionTranslator translater) {
-        this.translater = translater;
+
+    public void setTranslator(WebResponseExceptionTranslator translator) {
+        this.translator = translator;
     }
-    
+
     public HttpResponseRenderer getRenderer() {
         return renderer;
     }
-    
+
     public void setRenderer(HttpResponseRenderer renderer) {
         this.renderer = renderer;
     }
-    
+
     @Override
     public void handle(HttpServletRequest request,
                        HttpServletResponse response,
                        Exception exception) throws IOException,
-                                           ServletException {
+                                                   ServletException {
         try {
-            ResponseEntity result = translater.translate(exception);
+            ResponseEntity result = translator.translate(exception);
             renderer.handleResponse(result, request, response);
             response.flushBuffer();
-        }
-        catch (ServletException e) {
+        } catch (ServletException e) {
             throw e;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw e;
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // Wrap other Exceptions. These are not expected to happen
             throw new ServletException(e);
         }

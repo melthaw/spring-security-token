@@ -29,7 +29,7 @@ public class AuthorizationFilter extends GenericFilterBean implements Ordered {
     private static final Log logger = LogFactory.getLog(AuthorizationFilter.class);
 
     //@since 1.2.0
-    private int order = Ordered.HIGHEST_PRECEDENCE + 5;
+    private int order = Ordered.HIGHEST_PRECEDENCE + 6;
 
     private AuthorizationFailureHandler authorizationFailureHandler = new DefaultAuthorizationFailureHandler();
 

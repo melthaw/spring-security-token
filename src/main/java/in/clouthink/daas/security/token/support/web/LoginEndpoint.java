@@ -1,12 +1,9 @@
 package in.clouthink.daas.security.token.support.web;
 
-import in.clouthink.daas.security.token.core.Authentication;
-import in.clouthink.daas.security.token.core.AuthenticationManager;
-import in.clouthink.daas.security.token.core.UsernamePasswordAuthenticationRequest;
+import in.clouthink.daas.security.token.core.*;
 import in.clouthink.daas.security.token.event.authentication.HttpLoginEvent;
 import in.clouthink.daas.security.token.exception.AuthenticationException;
 import in.clouthink.daas.security.token.exception.AuthenticationFailureException;
-import in.clouthink.daas.security.token.exception.BadCredentialException;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import in.clouthink.daas.security.token.repackage.org.springframework.security.web.util.matcher.RequestMatcher;
 import in.clouthink.daas.security.token.spi.AuditCallback;
@@ -17,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import javax.servlet.FilterChain;
@@ -29,259 +27,314 @@ import java.io.IOException;
 
 public class LoginEndpoint extends GenericFilterBean implements ApplicationContextAware, Ordered {
 
-	private static final Log logger = LogFactory.getLog(LoginEndpoint.class);
+    private static final Log logger = LogFactory.getLog(LoginEndpoint.class);
 
-	public static final String SECURITY_FORM_USERNAME_KEY = "username";
+    public static final String SECURITY_FORM_USERNAME_KEY = "username";
 
-	public static final String SECURITY_FORM_PASSWORD_KEY = "password";
+    public static final String SECURITY_FORM_PASSWORD_KEY = "password";
 
-	//@since 2.0.0
-	private int order = Ordered.HIGHEST_PRECEDENCE + 1;
+    //@since 1.8.0
+    public static final String SECURITY_FORM_CAPTCHA_ID_KEY = "captcha_id";
 
-	private String usernameParameter = SECURITY_FORM_USERNAME_KEY;
+    //@since 1.8.0
+    public static final String SECURITY_FORM_CAPTCHA_RESPONSE_KEY = "captcha_response";
 
-	private String passwordParameter = SECURITY_FORM_PASSWORD_KEY;
+    //@since 1.2.0
+    private int order = Ordered.HIGHEST_PRECEDENCE + 1;
 
-	private boolean postOnly = true;
+    private String usernameParameter = SECURITY_FORM_USERNAME_KEY;
 
-	//@since 1.5.0
-	private ApplicationContext applicationContext;
+    private String passwordParameter = SECURITY_FORM_PASSWORD_KEY;
 
-	private AuthenticationSuccessHandler authenticationSuccessHandler = new DefaultAuthenticationSuccessHandler();
+    //@since 1.8.0
+    private String captchaIdParameter = SECURITY_FORM_CAPTCHA_ID_KEY;
 
-	private AuthenticationFailureHandler authenticationFailureHandler = new DefaultAuthenticationFailureHandler();
+    //@since 1.8.0
+    private String captchaResponseParameter = SECURITY_FORM_CAPTCHA_RESPONSE_KEY;
 
-	private RequestMatcher loginRequestMatcher;
+    private boolean postOnly = true;
 
-	private AuthenticationManager authenticationManager;
+    //@since 1.5.0
+    private ApplicationContext applicationContext;
 
-	private AuditCallback auditCallback;
+    private AuthenticationSuccessHandler authenticationSuccessHandler = new DefaultAuthenticationSuccessHandler();
 
-	private PreLoginHandler preLoginHandler;
+    private AuthenticationFailureHandler authenticationFailureHandler = new DefaultAuthenticationFailureHandler();
 
-	/**
-	 *
-	 */
-	public LoginEndpoint() {
-		this.loginRequestMatcher = new AntPathRequestMatcher("/token/login");
-	}
+    private RequestMatcher loginRequestMatcher;
 
-	/**
-	 * @param loginFilterProcessesUrl
-	 */
-	public LoginEndpoint(String loginFilterProcessesUrl) {
-		this.loginRequestMatcher = new AntPathRequestMatcher(loginFilterProcessesUrl);
-	}
+    private AuthenticationManager authenticationManager;
 
-	/**
-	 * @param loginRequestMatcher
-	 */
-	public LoginEndpoint(RequestMatcher loginRequestMatcher) {
-		Assert.notNull(loginRequestMatcher, "loginRequestMatcher cannot be null");
-		this.loginRequestMatcher = loginRequestMatcher;
+    private AuditCallback auditCallback;
 
-	}
+    private PreLoginHandler preLoginHandler;
 
-	/**
-	 * @param order the order to set
-	 */
-	public void setOrder(int order) {
-		this.order = order;
-	}
+    //@since 1.8.0
+    private FeatureConfigurer featureConfigurer;
 
-	/**
-	 * @return the order
-	 */
-	@Override
-	public int getOrder() {
-		return this.order;
-	}
+    //@since 1.8.0
+    private CaptchaManager captchaManager;
 
-	/**
-	 * @param applicationContext
-	 */
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-	}
+    /**
+     *
+     */
+    public LoginEndpoint() {
+        this.loginRequestMatcher = new AntPathRequestMatcher("/token/login");
+    }
 
-	/**
-	 * @param loginFilterProcessesUrl
-	 */
-	public void setLoginProcessesUrl(String loginFilterProcessesUrl) {
-		this.loginRequestMatcher = new AntPathRequestMatcher(loginFilterProcessesUrl);
-	}
+    /**
+     * @param loginFilterProcessesUrl
+     */
+    public LoginEndpoint(String loginFilterProcessesUrl) {
+        this.loginRequestMatcher = new AntPathRequestMatcher(loginFilterProcessesUrl);
+    }
 
-	/**
-	 * @param loginRequestMatcher
-	 */
-	public final void setLoginRequestMatcher(RequestMatcher loginRequestMatcher) {
-		Assert.notNull(loginRequestMatcher, "loginRequestMatcher cannot be null");
-		this.loginRequestMatcher = loginRequestMatcher;
-	}
+    /**
+     * @param loginRequestMatcher
+     */
+    public LoginEndpoint(RequestMatcher loginRequestMatcher) {
+        Assert.notNull(loginRequestMatcher, "loginRequestMatcher cannot be null");
+        this.loginRequestMatcher = loginRequestMatcher;
 
-	public String getUsernameParameter() {
-		return usernameParameter;
-	}
+    }
 
-	public void setUsernameParameter(String usernameParameter) {
-		this.usernameParameter = usernameParameter;
-	}
+    /**
+     * @param order the order to set
+     */
+    public void setOrder(int order) {
+        this.order = order;
+    }
 
-	public String getPasswordParameter() {
-		return passwordParameter;
-	}
+    /**
+     * @return the order
+     */
+    @Override
+    public int getOrder() {
+        return this.order;
+    }
 
-	public void setPasswordParameter(String passwordParameter) {
-		this.passwordParameter = passwordParameter;
-	}
+    /**
+     * @param applicationContext
+     */
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
-	public boolean isPostOnly() {
-		return postOnly;
-	}
+    /**
+     * @param loginFilterProcessesUrl
+     */
+    public void setLoginProcessesUrl(String loginFilterProcessesUrl) {
+        this.loginRequestMatcher = new AntPathRequestMatcher(loginFilterProcessesUrl);
+    }
 
-	public void setPostOnly(boolean postOnly) {
-		this.postOnly = postOnly;
-	}
+    /**
+     * @param loginRequestMatcher
+     */
+    public final void setLoginRequestMatcher(RequestMatcher loginRequestMatcher) {
+        Assert.notNull(loginRequestMatcher, "loginRequestMatcher cannot be null");
+        this.loginRequestMatcher = loginRequestMatcher;
+    }
 
-	public AuthenticationSuccessHandler getAuthenticationSuccessHandler() {
-		return authenticationSuccessHandler;
-	}
+    public String getUsernameParameter() {
+        return usernameParameter;
+    }
 
-	public void setAuthenticationSuccessHandler(AuthenticationSuccessHandler authenticationSuccessHandler) {
-		this.authenticationSuccessHandler = authenticationSuccessHandler;
-	}
+    public void setUsernameParameter(String usernameParameter) {
+        this.usernameParameter = usernameParameter;
+    }
 
-	public AuthenticationFailureHandler getAuthenticationFailureHandler() {
-		return authenticationFailureHandler;
-	}
+    public String getPasswordParameter() {
+        return passwordParameter;
+    }
 
-	public void setAuthenticationFailureHandler(AuthenticationFailureHandler authenticationFailureHandler) {
-		this.authenticationFailureHandler = authenticationFailureHandler;
-	}
+    public void setPasswordParameter(String passwordParameter) {
+        this.passwordParameter = passwordParameter;
+    }
 
-	public AuthenticationManager getAuthenticationManager() {
-		return authenticationManager;
-	}
+    public String getCaptchaIdParameter() {
+        return captchaIdParameter;
+    }
 
-	public void setAuthenticationManager(AuthenticationManager authenticationManager) {
-		this.authenticationManager = authenticationManager;
-	}
+    public void setCaptchaIdParameter(String captchaIdParameter) {
+        this.captchaIdParameter = captchaIdParameter;
+    }
 
-	public AuditCallback getAuditCallback() {
-		return auditCallback;
-	}
+    public String getCaptchaResponseParameter() {
+        return captchaResponseParameter;
+    }
 
-	public void setAuditCallback(AuditCallback auditCallback) {
-		Assert.notNull(auditCallback, "auditCallback cannot be null");
-		this.auditCallback = auditCallback;
-	}
+    public void setCaptchaResponseParameter(String captchaResponseParameter) {
+        this.captchaResponseParameter = captchaResponseParameter;
+    }
 
-	public PreLoginHandler getPreLoginHandler() {
-		return preLoginHandler;
-	}
+    public boolean isPostOnly() {
+        return postOnly;
+    }
 
-	public void setPreLoginHandler(PreLoginHandler preLoginHandler) {
-		this.preLoginHandler = preLoginHandler;
-	}
+    public void setPostOnly(boolean postOnly) {
+        this.postOnly = postOnly;
+    }
 
-	@Override
-	public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
-			throws ServletException, IOException {
-		logger.trace("doFilter start");
-		HttpServletRequest request = (HttpServletRequest) req;
-		HttpServletResponse response = (HttpServletResponse) res;
-		if (isLoginMatched(request, response)) {
-			logger.trace("doLogin matched");
-			doLogin(request, response, chain);
-		}
-		else {
-			logger.trace("doLogin un-matched, skip it");
-			chain.doFilter(request, response);
-		}
-	}
+    public AuthenticationSuccessHandler getAuthenticationSuccessHandler() {
+        return authenticationSuccessHandler;
+    }
 
-	private void doLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
-		logger.trace("doLogin start");
-		try {
-			if (postOnly && !"POST".equals(request.getMethod())) {
-				throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
-			}
+    public void setAuthenticationSuccessHandler(AuthenticationSuccessHandler authenticationSuccessHandler) {
+        this.authenticationSuccessHandler = authenticationSuccessHandler;
+    }
 
-			if (preLoginHandler != null) {
-				preLoginHandler.handle(request, response);
-			}
+    public AuthenticationFailureHandler getAuthenticationFailureHandler() {
+        return authenticationFailureHandler;
+    }
 
-			String username = obtainUsername(request);
-			String password = obtainPassword(request);
+    public void setAuthenticationFailureHandler(AuthenticationFailureHandler authenticationFailureHandler) {
+        this.authenticationFailureHandler = authenticationFailureHandler;
+    }
 
-			if (username == null) {
-				throw new AuthenticationFailureException(String.format("The %s required.", usernameParameter));
-			}
+    public AuthenticationManager getAuthenticationManager() {
+        return authenticationManager;
+    }
 
-			if (password == null) {
-				throw new AuthenticationFailureException(String.format("The %s required.", passwordParameter));
-			}
+    public void setAuthenticationManager(AuthenticationManager authenticationManager) {
+        this.authenticationManager = authenticationManager;
+    }
 
-			username = username.trim();
+    public AuditCallback getAuditCallback() {
+        return auditCallback;
+    }
 
-			UsernamePasswordAuthenticationRequest authRequest = new UsernamePasswordAuthenticationRequest(username,
-																										  password);
+    public void setAuditCallback(AuditCallback auditCallback) {
+        Assert.notNull(auditCallback, "auditCallback cannot be null");
+        this.auditCallback = auditCallback;
+    }
 
-			Authentication authentication = authenticationManager.login(authRequest);
+    public PreLoginHandler getPreLoginHandler() {
+        return preLoginHandler;
+    }
 
-			//deprecated after 1.5.0
-			if (auditCallback != null) {
-				try {
-					auditCallback.auditLogin(request, true);
-				}
-				catch (Throwable e) {
-				}
-			}
+    public void setPreLoginHandler(PreLoginHandler preLoginHandler) {
+        this.preLoginHandler = preLoginHandler;
+    }
 
-			//@since 1.5.0
-			applicationContext.publishEvent(new HttpLoginEvent(request, authentication));
+    public FeatureConfigurer getFeatureConfigurer() {
+        return featureConfigurer;
+    }
 
-			authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
-		}
-		catch (Exception e) {
-			logger.error(e, e);
+    public void setFeatureConfigurer(FeatureConfigurer featureConfigurer) {
+        this.featureConfigurer = featureConfigurer;
+    }
 
-			//deprecated after 1.5.0
-			if (auditCallback != null) {
-				try {
-					auditCallback.auditLogin(request, false);
-				}
-				catch (Throwable e1) {
-				}
-			}
+    @Override
+    public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws ServletException, IOException {
+        logger.trace("doFilter start");
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+        if (isLoginMatched(request, response)) {
+            logger.trace("doLogin matched");
+            doLogin(request, response, chain);
+        }
+        else {
+            logger.trace("doLogin un-matched, skip it");
+            chain.doFilter(request, response);
+        }
+    }
 
-			//@since 1.5.0
-			applicationContext.publishEvent(new HttpLoginEvent(request, e));
+    private void doLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        logger.trace("doLogin start");
+        try {
+            if (postOnly && !"POST".equals(request.getMethod())) {
+                throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
+            }
 
-			authenticationFailureHandler.handle(request, response, e);
-		}
-	}
+            if (preLoginHandler != null) {
+                preLoginHandler.handle(request, response);
+            }
 
-	protected String obtainUsername(HttpServletRequest request) {
-		return request.getParameter(usernameParameter);
-	}
+            String username = obtainUsername(request);
+            String password = obtainPassword(request);
 
-	protected String obtainPassword(HttpServletRequest request) {
-		return request.getParameter(passwordParameter);
-	}
+            if (StringUtils.isEmpty(username)) {
+                throw new AuthenticationFailureException(String.format("The %s required.", usernameParameter));
+            }
 
-	protected boolean isLoginMatched(HttpServletRequest request, HttpServletResponse response) {
-		if (postOnly) {
-			return loginRequestMatcher.matches(request) && "POST".equals(request.getMethod());
-		}
-		return loginRequestMatcher.matches(request);
-	}
+            if (StringUtils.isEmpty(password)) {
+                throw new AuthenticationFailureException(String.format("The %s required.", passwordParameter));
+            }
 
-	@Override
-	public void afterPropertiesSet() {
-		logger.trace("afterPropertiesSet");
-		Assert.notNull(authenticationManager, "authenticationManager must be specified");
-	}
+            username = username.trim();
+
+            //@since 1.8.0
+            if (featureConfigurer.isEnabled(AuthenticationFeature.CAPTCHA_ENABLED)) {
+                String captchaId = obtainCaptchaId(request);
+                String captchaResponse = obtainCaptchaResponse(request);
+
+                if (StringUtils.isEmpty(captchaId)) {
+                    throw new AuthenticationFailureException(String.format("The %s required.", captchaIdParameter));
+                }
+
+                if (StringUtils.isEmpty(captchaResponse)) {
+                    throw new AuthenticationFailureException(String.format("The %s required.",
+                                                                           captchaResponseParameter));
+                }
+
+                CaptchaVerifyRequest captchaVerifyRequest = new CaptchaVerifyRequest(captchaId,
+                                                                                     captchaResponse);
+
+                captchaManager.verify(captchaVerifyRequest);
+            }
+
+            UsernamePasswordAuthenticationRequest authRequest = new UsernamePasswordAuthenticationRequest(username,
+                                                                                                          password);
+
+            Authentication authentication = authenticationManager.login(authRequest);
+
+            //@since 1.5.0
+            applicationContext.publishEvent(new HttpLoginEvent(request, authentication));
+
+            authenticationSuccessHandler.onAuthenticationSuccess(request, response, authentication);
+        } catch (Exception e) {
+            logger.error(e, e);
+
+            //@since 1.5.0
+            applicationContext.publishEvent(new HttpLoginEvent(request, e));
+
+            authenticationFailureHandler.handle(request, response, e);
+        }
+    }
+
+    protected String obtainUsername(HttpServletRequest request) {
+        return request.getParameter(usernameParameter);
+    }
+
+    protected String obtainPassword(HttpServletRequest request) {
+        return request.getParameter(passwordParameter);
+    }
+
+    protected String obtainCaptchaId(HttpServletRequest request) {
+        return request.getParameter(captchaIdParameter);
+    }
+
+    protected String obtainCaptchaResponse(HttpServletRequest request) {
+        return request.getParameter(captchaResponseParameter);
+    }
+
+    protected boolean isLoginMatched(HttpServletRequest request, HttpServletResponse response) {
+        if (featureConfigurer.isEnabled(AuthenticationFeature.POST_LOGIN_ONLY)) {
+            return loginRequestMatcher.matches(request) && "POST".equals(request.getMethod());
+        }
+        return loginRequestMatcher.matches(request);
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        logger.trace("afterPropertiesSet");
+
+        Assert.notNull(featureConfigurer, "featureConfigurer must be specified");
+        Assert.notNull(captchaManager, "captchaManager must be specified");
+        Assert.notNull(authenticationManager, "authenticationManager must be specified");
+    }
+
 }
