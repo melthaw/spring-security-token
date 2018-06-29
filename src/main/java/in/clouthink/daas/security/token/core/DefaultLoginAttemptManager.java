@@ -6,6 +6,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
 /**
+ * The default impl for LoginAttemptManager
+ *
  * @author dz
  * @since 1.7.0
  */

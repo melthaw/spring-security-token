@@ -1,6 +1,7 @@
 package in.clouthink.daas.security.token.exception;
 
 /**
+ * err const def.
  */
 public abstract class ErrorConstants {
 
@@ -29,5 +30,11 @@ public abstract class ErrorConstants {
 
     //@since 1.7.0
     public static final String LOGIN_LOCKED = "error.loginLocked";
+
+    //@since 1.8.0
+    public static final String INCORRECT_CAPTCHA = "error.incorrectCaptcha";
+
+    //@since 1.8.0
+    public static final String CAPTCHA_IS_EXPIRED = "error.captchaIsExpired";
 
 }

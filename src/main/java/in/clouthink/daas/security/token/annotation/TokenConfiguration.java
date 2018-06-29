@@ -13,6 +13,7 @@ import in.clouthink.daas.security.token.spi.impl.DefaultUrlAuthorizationProvider
 import in.clouthink.daas.security.token.spi.impl.SimpleFederationProvider;
 import in.clouthink.daas.security.token.spi.impl.TokenAuthenticationProvider;
 import in.clouthink.daas.security.token.spi.impl.UsernamePasswordAuthenticationProvider;
+import in.clouthink.daas.security.token.spi.impl.memory.CaptchaProviderMemoryImpl;
 import in.clouthink.daas.security.token.spi.impl.memory.IdentityProviderMemoryImpl;
 import in.clouthink.daas.security.token.spi.impl.memory.LoginAttemptProviderMemoryImpl;
 import in.clouthink.daas.security.token.spi.impl.memory.TokenProviderMemoryImpl;
@@ -74,7 +75,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn({"daasDefaultAuthorizationManager", "daasFeatureConfigurer"})
+    @DependsOn({"daasAuthorizationManager", "daasFeatureConfigurer"})
     public AuthorizationFilter daasTokenAuthorizationFilter(AuthorizationManager authorizationManager,
                                                             FeatureConfigurer featureConfigurer,
                                                             MessageProvider messageProvider) {
@@ -88,7 +89,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn({"daasDefaultAuthenticationManager", "daasFeatureConfigurer"})
+    @DependsOn({"daasAuthenticationManager", "daasFeatureConfigurer"})
     public AuthenticationFilter daasTokenAuthenticationFilter(AuthenticationManager authenticationManager,
                                                               FeatureConfigurer featureConfigurer,
                                                               MessageProvider messageProvider) {
@@ -101,7 +102,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn({"daasDefaultAuthenticationManager", "daasFeatureConfigurer"})
+    @DependsOn({"daasAuthenticationManager", "daasFeatureConfigurer"})
     public TokenAuthenticationFilter daasTokenPreAuthenticationFilter(AuthenticationManager authenticationManager,
                                                                       FeatureConfigurer featureConfigurer,
                                                                       MessageProvider messageProvider) {
@@ -115,7 +116,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn("daasDefaultAuthenticationManager")
+    @DependsOn("daasAuthenticationManager")
     public LogoutEndpoint daasTokenLogoutEndpoint(AuthenticationManager authenticationManager,
                                                   MessageProvider messageProvider) {
         LogoutEndpoint logoutEndpoint = new LogoutEndpoint();
@@ -127,11 +128,15 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn("daasDefaultAuthenticationManager")
+    @DependsOn({"daasAuthenticationManager", "daasCaptchaManager", "daasFeatureConfigurer"})
     public LoginEndpoint daasTokenLoginEndpoint(AuthenticationManager authenticationManager,
+                                                CaptchaManager captchaManager,
+                                                FeatureConfigurer featureConfigurer,
                                                 MessageProvider messageProvider) {
         LoginEndpoint loginEndpoint = new LoginEndpoint();
         loginEndpoint.setAuthenticationManager(authenticationManager);
+        loginEndpoint.setFeatureConfigurer(featureConfigurer);
+        loginEndpoint.setCaptchaManager(captchaManager);
         loginEndpoint.setAuthenticationFailureHandler(new DefaultAuthenticationFailureHandler(messageProvider));
         tokenConfigurer.configure(loginEndpoint);
         return loginEndpoint;
@@ -139,11 +144,11 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    @DependsOn({"daasUsernamePasswordAuthenticationProvider", "daasTokenAuthenticationProvider", "daasDefaultLoginAttemptProvider", "daasFeatureConfigurer"})
-    public AuthenticationManager daasDefaultAuthenticationManager(IdentityProvider identityProvider,
-                                                                  LoginAttemptManager loginAttemptManager,
-                                                                  TokenManager tokenManager,
-                                                                  FeatureConfigurer featureConfigurer) {
+    @DependsOn({"daasUsernamePasswordAuthenticationProvider", "daasTokenAuthenticationProvider", "daasLoginAttemptProvider", "daasFeatureConfigurer"})
+    public AuthenticationManager daasAuthenticationManager(IdentityProvider identityProvider,
+                                                           LoginAttemptManager loginAttemptManager,
+                                                           TokenManager tokenManager,
+                                                           FeatureConfigurer featureConfigurer) {
         DefaultAuthenticationManager result = new DefaultAuthenticationManager();
         result.addProvider(daasUsernamePasswordAuthenticationProvider(identityProvider,
                                                                       loginAttemptManager,
@@ -156,8 +161,8 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     @Bean
     @Autowired
     @DependsOn({"daasSimpleFederationProvider", "daasTokenAuthenticationProvider"})
-    public FederationService daasDefaultFederationService(IdentityProvider identityProvider,
-                                                          TokenManager tokenManager) {
+    public FederationService daasFederationService(IdentityProvider identityProvider,
+                                                   TokenManager tokenManager) {
         DefaultFederationService result = new DefaultFederationService();
         result.addProvider(daasSimpleFederationProvider(tokenManager));
         result.addProvider(daasTokenAuthenticationProvider(identityProvider, tokenManager));
@@ -166,7 +171,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    public AuthorizationManager daasDefaultAuthorizationManager(AuthorizationProvider authorizationProvider) {
+    public AuthorizationManager daasAuthorizationManager(AuthorizationProvider authorizationProvider) {
         DefaultAuthorizationManager result = new DefaultAuthorizationManager();
         result.getProviders().add(authorizationProvider);
         return result;
@@ -206,7 +211,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    public AuthorizationProvider daasDefaultUrlAuthorizationProvider(AclProvider aclProvider) {
+    public AuthorizationProvider daasUrlAuthorizationProvider(AclProvider aclProvider) {
         DefaultUrlAuthorizationProvider result = new DefaultUrlAuthorizationProvider();
         result.getVoters().add(new AccessRequestRoleVoter());
         result.getVoters().add(new AccessRequestUserVoter());
@@ -216,7 +221,7 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
 
     @Bean
     @Autowired
-    public TokenManager daasDefaultTokenManager(TokenProvider tokenProvider) {
+    public TokenManager daasTokenManager(TokenProvider tokenProvider) {
         DefaultTokenManager tokenManager = new DefaultTokenManager();
         tokenManager.setTokenProvider(tokenProvider);
         tokenConfigurer.configure(tokenManager);
@@ -224,19 +229,19 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     }
 
     @Bean
-    public AclProvider daasDefaultUrlAclProvider() {
+    public AclProvider daasUrlAclProvider() {
         UrlAclProviderBuilder urlAclProviderBuilder = UrlAclProviderBuilder.newInstance();
         tokenConfigurer.configure(urlAclProviderBuilder);
         return urlAclProviderBuilder.build();
     }
 
     @Bean
-    public TokenProvider daasDefaultTokenProvider() {
+    public TokenProvider daasTokenProvider() {
         return new TokenProviderMemoryImpl();
     }
 
     @Bean
-    public IdentityProvider daasDefaultIdentityProvider() {
+    public IdentityProvider daasIdentityProvider() {
         return new IdentityProviderMemoryImpl();
     }
 
@@ -264,8 +269,22 @@ public class TokenConfiguration implements ImportAware, BeanFactoryAware {
     }
 
     @Bean
-    public LoginAttemptProvider daasDefaultLoginAttemptProvider() {
+    public LoginAttemptProvider daasLoginAttemptProvider() {
         return new LoginAttemptProviderMemoryImpl();
+    }
+
+    @Bean
+    @Autowired
+    public CaptchaManager daasCaptchaManager(CaptchaProvider daasCaptchaProvider) {
+        DefaultCaptchaManager result = new DefaultCaptchaManager();
+        result.setCaptchaProvider(daasCaptchaProvider);
+        tokenConfigurer.configure(result);
+        return result;
+    }
+
+    @Bean
+    public CaptchaProvider daasCaptchaProvider() {
+        return new CaptchaProviderMemoryImpl();
     }
 
 }

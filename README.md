@@ -20,9 +20,15 @@ Thanks Spring Security. There are some useful APIs available for us in Spring Se
 
 So far the following version is available
 
-module name |	latest version
----|---
-daas-token | 1.7.0
+module name |	latest version | features
+---|---|---
+daas-token | 1.8.0 | captcha
+daas-token | 1.7.0 | login attempt
+daas-token | 1.6.0 | feature configurer
+daas-token | 1.5.2 | compatible with spring-boot
+daas-token | 1.5.0 | authn & authz event
+daas-token | 1.4.6 | federation authn
+
 
 ## Maven
 
@@ -474,18 +480,20 @@ Explain
     
 error code | error message | http status code | description
 -----------|-----------|-----------|-----------
-error.invalidUserOrPassword | Invalid username or password. |  |
-error.invalidTokenOrExpired | The session is invalid or expired. | |
-error.tokenIsDisabled |The token is disabled. | |
-error.userIsLocked | The user is locked. | | 
-error.userIsDisabled | The user is disabled. | |
-error.userIsExpired | The user is expired. | |
-error.authenticationRequired | Authentication required. | |
-error.authenticationFailed | Authentication failed. | |
-error.authorizationFailed | Authorization failed. | |
-error.noPermission | No permission.Access denied. | |
-error.loginAttemptFailure | Wrong password. In %d hours only %d time(s) left. | | since 1.7.0
-error.loginLocked | Wrong %d times. User is locked. | | since 1.7.0
+error.invalidUserOrPassword | Invalid username or password. | 200 |
+error.invalidTokenOrExpired | The session is invalid or expired. |401 |
+error.tokenIsDisabled |The token is disabled. |401 |
+error.userIsLocked | The user is locked. |200 | 
+error.userIsDisabled | The user is disabled. | 200|
+error.userIsExpired | The user is expired. |200 |
+error.authenticationRequired | Authentication required. | 401|
+error.authenticationFailed | Authentication failed. |401 |
+error.authorizationFailed | Authorization failed. | 401 |
+error.noPermission | No permission.Access denied. | 403|
+error.loginAttemptFailure | Wrong password. In %d hours only %d time(s) left. | 200| since 1.7.0
+error.loginLocked | Wrong %d times. User is locked. |200 | since 1.7.0
+error.incorrectCaptcha | Incorrect captcha. | 200 | since 1.8.0
+error.captchaIsExpired | Captcha is not found or expired. | 200 | since 1.8.0
 
 ## Appendix : web.xml filter configuration sample
 
@@ -555,7 +563,6 @@ error.loginLocked | Wrong %d times. User is locked. | | since 1.7.0
             <param-value>true</param-value>
         </init-param>
     </filter>
-
 
     <filter-mapping>
         <filter-name>daasTokenLoginEndpoint</filter-name>

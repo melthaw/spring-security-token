@@ -1,6 +1,8 @@
 package in.clouthink.daas.security.token.core;
 
 /**
+ * The configurer to enable & disable authn features.
+ *
  * @since 1.6
  */
 public class FeatureConfigurer {
