@@ -2,7 +2,7 @@ package in.clouthink.daas.security.token.core;
 
 import in.clouthink.daas.security.token.core.captcha.RandomUtils;
 import in.clouthink.daas.security.token.exception.CaptchaExpiredException;
-import in.clouthink.daas.security.token.exception.InvalidCaptchaException;
+import in.clouthink.daas.security.token.exception.IncorrectCaptchaException;
 import in.clouthink.daas.security.token.spi.CaptchaProvider;
 import in.clouthink.daas.security.token.spi.impl.model.CaptchaEntity;
 import org.springframework.beans.factory.InitializingBean;
@@ -15,10 +15,6 @@ import org.springframework.util.Assert;
  */
 public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
 
-    private static final String ALL_CHAR = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final String LETTER_CHAR = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final String NUMBER_CHAR = "0123456789";
-
     int length = 4;
 
     boolean numberEnabled = true;
@@ -27,11 +23,7 @@ public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
 
     long captchaTimeout = 60 * 1000;
 
-    private CaptchaProvider captchaProvider;
-
-    public CaptchaProvider getCaptchaProvider() {
-        return captchaProvider;
-    }
+    private CaptchaProvider<Captcha> captchaProvider;
 
     public void setCaptchaProvider(CaptchaProvider captchaProvider) {
         this.captchaProvider = captchaProvider;
@@ -100,12 +92,12 @@ public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
             throw new CaptchaExpiredException();
         }
         if (!captcha.getValue().equals(request.getCaptchaResponse())) {
-            throw new InvalidCaptchaException();
+            throw new IncorrectCaptchaException();
         }
     }
 
     @Override
     public void afterPropertiesSet() {
-        Assert.notNull(captchaProvider, "captchaProvider must be specified");
+        Assert.notNull(captchaProvider);
     }
 }

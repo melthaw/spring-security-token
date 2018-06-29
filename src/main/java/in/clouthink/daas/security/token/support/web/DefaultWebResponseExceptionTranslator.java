@@ -30,6 +30,19 @@ public class DefaultWebResponseExceptionTranslator implements
         headers.set("Cache-Control", "no-store");
         headers.set("Pragma", "no-cache");
 
+        if (e instanceof IncorrectCaptchaException) {
+            return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.INCORRECT_CAPTCHA,
+                                                                 messageProvider.getMessage(ErrorConstants.INCORRECT_CAPTCHA)),
+                                      headers,
+                                      HttpStatus.OK);
+        }
+
+        if (e instanceof CaptchaExpiredException) {
+            return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.CAPTCHA_IS_EXPIRED,
+                                                                 messageProvider.getMessage(ErrorConstants.CAPTCHA_IS_EXPIRED)),
+                                      headers,
+                                      HttpStatus.OK);
+        }
         if (e instanceof UserNotFoundException) {
             return new ResponseEntity(WebResultWrapper.failedMap(ErrorConstants.INVALID_USER_OR_PASSWORD,
                                                                  messageProvider.getMessage(ErrorConstants.INVALID_USER_OR_PASSWORD)),

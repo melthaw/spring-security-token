@@ -11,9 +11,8 @@ public class CaptchaVerifyRequest implements CaptchaRequest {
 
     private String captchaResponse;
 
-    public CaptchaVerifyRequest(
-            String captchaId,
-            String captchaResponse) {
+    public CaptchaVerifyRequest(String captchaId,
+                                String captchaResponse) {
         this.captchaId = captchaId;
         this.captchaResponse = captchaResponse;
     }

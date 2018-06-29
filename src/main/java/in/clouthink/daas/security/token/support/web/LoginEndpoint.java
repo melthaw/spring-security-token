@@ -52,8 +52,6 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
     //@since 1.8.0
     private String captchaResponseParameter = SECURITY_FORM_CAPTCHA_RESPONSE_KEY;
 
-    private boolean postOnly = true;
-
     //@since 1.5.0
     private ApplicationContext applicationContext;
 
@@ -168,14 +166,6 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
         this.captchaResponseParameter = captchaResponseParameter;
     }
 
-    public boolean isPostOnly() {
-        return postOnly;
-    }
-
-    public void setPostOnly(boolean postOnly) {
-        this.postOnly = postOnly;
-    }
-
     public AuthenticationSuccessHandler getAuthenticationSuccessHandler() {
         return authenticationSuccessHandler;
     }
@@ -225,6 +215,14 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
         this.featureConfigurer = featureConfigurer;
     }
 
+    public CaptchaManager getCaptchaManager() {
+        return captchaManager;
+    }
+
+    public void setCaptchaManager(CaptchaManager captchaManager) {
+        this.captchaManager = captchaManager;
+    }
+
     @Override
     public final void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws ServletException, IOException {
@@ -245,7 +243,8 @@ public class LoginEndpoint extends GenericFilterBean implements ApplicationConte
             throws IOException, ServletException {
         logger.trace("doLogin start");
         try {
-            if (postOnly && !"POST".equals(request.getMethod())) {
+            if (featureConfigurer.isEnabled(AuthenticationFeature.POST_LOGIN_ONLY) &&
+                    !"POST".equals(request.getMethod())) {
                 throw new AuthenticationException("Authentication method not supported: " + request.getMethod());
             }
 

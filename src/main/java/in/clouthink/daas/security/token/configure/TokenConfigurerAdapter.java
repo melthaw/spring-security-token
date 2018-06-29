@@ -1,5 +1,6 @@
 package in.clouthink.daas.security.token.configure;
 
+import in.clouthink.daas.security.token.core.CaptchaOptions;
 import in.clouthink.daas.security.token.core.FeatureConfigurer;
 import in.clouthink.daas.security.token.core.LoginAttemptOptions;
 import in.clouthink.daas.security.token.core.TokenOptions;
@@ -7,6 +8,7 @@ import in.clouthink.daas.security.token.support.i18n.MessageProvider;
 import in.clouthink.daas.security.token.support.web.*;
 
 /**
+ * The adapter impl for TokenConfigurer
  */
 public class TokenConfigurerAdapter implements TokenConfigurer {
 
@@ -41,10 +43,19 @@ public class TokenConfigurerAdapter implements TokenConfigurer {
     }
 
     @Override
-    public void configure(TokenOptions tokenOptions) {
+    public void configure(UrlAclProviderBuilder builder) {
 
     }
 
+    @Override
+    public void configure(FeatureConfigurer featureConfigurer) {
+
+    }
+
+    @Override
+    public void configure(TokenOptions tokenOptions) {
+
+    }
 
     @Override
     public void configure(LoginAttemptOptions loginAttemptOptions) {
@@ -52,12 +63,7 @@ public class TokenConfigurerAdapter implements TokenConfigurer {
     }
 
     @Override
-    public void configure(UrlAclProviderBuilder builder) {
-
-    }
-
-    @Override
-    public void configure(FeatureConfigurer featureConfigurer) {
+    public void configure(CaptchaOptions captchaOptions) {
 
     }
 }
