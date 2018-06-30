@@ -36,6 +36,16 @@ public interface CaptchaOptions extends Serializable {
     void disableChar();
 
     /**
+     * The captcha is case-sensitive
+     */
+    void enableCaseSensitive();
+
+    /**
+     * The captcha is case-insensitive
+     */
+    void disableCaseSensitive();
+
+    /**
      * @param timeout milli seconds , must be the range of 30s ~ 10*60s
      */
     void setCaptchaTimeout(long timeout);

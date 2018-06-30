@@ -21,6 +21,8 @@ public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
 
     boolean charEnabled = true;
 
+    boolean caseSensitive = false;
+
     long captchaTimeout = 60 * 1000;
 
     private CaptchaProvider<Captcha> captchaProvider;
@@ -60,6 +62,16 @@ public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
     }
 
     @Override
+    public void enableCaseSensitive() {
+        this.caseSensitive = true;
+    }
+
+    @Override
+    public void disableCaseSensitive() {
+        this.caseSensitive = false;
+    }
+
+    @Override
     public void setCaptchaTimeout(long timeout) {
         if (timeout < 30 * 1000 || timeout > 10 * 60 * 1000) {
             throw new IllegalArgumentException();
@@ -91,8 +103,15 @@ public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
         if (captcha == null) {
             throw new CaptchaExpiredException();
         }
-        if (!captcha.getValue().equalsIgnoreCase(request.getCaptchaResponse())) {
-            throw new IncorrectCaptchaException();
+        if (this.caseSensitive) {
+            if (!captcha.getValue().equals(request.getCaptchaResponse())) {
+                throw new IncorrectCaptchaException();
+            }
+        }
+        else {
+            if (!captcha.getValue().equalsIgnoreCase(request.getCaptchaResponse())) {
+                throw new IncorrectCaptchaException();
+            }
         }
     }
 

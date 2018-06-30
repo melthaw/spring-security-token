@@ -22,7 +22,7 @@ So far the following version is available
 
 module name |	latest version | features
 ---|---|---
-daas-token | 1.8.0 | captcha
+daas-token | 1.8.1 | captcha
 daas-token | 1.7.0 | login attempt
 daas-token | 1.6.0 | feature configurer
 daas-token | 1.5.2 | compatible with spring-boot
@@ -44,7 +44,6 @@ daas-token | 1.4.6 | federation authn
 ```gradle
     compile "in.clouthink.daas:daas-token:${daas_token_version}"
 ```
-
 
 ## Features Customization
 
@@ -98,16 +97,23 @@ So please enable the spring schedule feature if you does not change the default 
 We recommend to use Redis to replace the default memory-based store to manage the token and login attempts.
 
 
-## Customize
+Implement the interface `TokenConfigurer` to customize your Daas-Token settings.
 
-Implement the interface `TokenConfigurer` to customize the Daas-Token features
-
-* login url 
-* logout url
-* authenticate url
-* authorize url
-* token alive timeout
-* access control list
+```java
+public interface TokenConfigurer {
+    void configure(MessageProvider messageProvider);
+    void configure(TokenAuthenticationFilter filter);
+    void configure(AuthorizationFilter filter);
+    void configure(AuthenticationFilter filter);
+    void configure(LoginEndpoint endpoint);
+    void configure(LogoutEndpoint endpoint);
+    void configure(UrlAclProviderBuilder builder);
+    void configure(FeatureConfigurer featureConfigurer);
+    void configure(TokenOptions tokenOptions);
+    void configure(LoginAttemptOptions loginAttemptOptions);
+    void configure(CaptchaOptions captchaOptions);
+}
+```
 
 Here is the sample 
 
@@ -134,6 +140,12 @@ For example , we'd like to let the token only be alive for one hour.
     }
 ```
 
+# Get Started
+
+## Login
+
+> * LoginEndpoint
+
 Set the login process url:
 
 ```java
@@ -146,7 +158,11 @@ Set the login process url:
             }
         }
     }
-```    
+```   
+ 
+## Logout
+
+> * LogoutEndpoint
 
 Set the logout process url:
 
@@ -161,6 +177,11 @@ Set the logout process url:
         }
     }
 ```
+
+## REST Api Protection
+
+> * AuthenticationFilter
+> * AuthorizationFilter
 
 Set the protected rest url:
 
@@ -223,6 +244,59 @@ The user which's username is **TESTUSER** or owns the Role **TEST** can access t
         }
     }
 ```           
+
+## Login Attempt
+
+
+Enable the `LOGIN_ATTEMPT_ENABLED` feature and customize the `LoginAttemptOptions` for login attempt.
+
+```java
+    
+    public void configure(FeatureConfigurer featureConfigurer) {
+        featureConfigurer.enable(AuthenticationFeature.LOGIN_ATTEMPT_ENABLED);
+    }
+    
+    public void configure(LoginAttemptOptions loginAttemptOptions) {
+        loginAttemptOptions.setMaxAttempts((short) 3);
+    }    
+    
+``` 
+`LoginAttemptOptions` Refz
+
+options  | default value | desc
+---|---|---
+maxAttempts | 5  |The max attempts count, once equals or greater than it , the user will be locked.
+attemptTimeout | 24 * 60 * 60 * 1000    |  milli seconds , the user login attempts failure count duration ,once equals or greater than it , it will be reset or clear.
+
+## Captcha
+
+
+Enable the `CAPTCHA_ENABLED` feature and customize `CaptchaOptions` for captcha options.
+
+```java
+
+    public void configure(FeatureConfigurer featureConfigurer) {
+        featureConfigurer.enable(AuthenticationFeature.CAPTCHA_ENABLED);
+    }
+
+    public void configure(CaptchaOptions captchaOptions) {
+        captchaOptions.setLength(6);
+        captchaOptions.setCaptchaTimeout(60 * 1000);
+    }
+    
+```
+
+`CaptchaOptions` Refz
+
+options  | default value | desc
+---|---|---
+length | 4 | length the length of the captcha, must be the range of 4~12
+numberEnabled  | true | number including in the generated captcha 
+charEnabled | true | char including in the generated captcha 
+caseSensitive | false | the captcha is case-sensitive or not
+captchaTimeout  | 30 * 1000 | timeout milli seconds , must be the range of 30s ~ 10*60s
+
+# Beyond Default
 
 ## Redis 
 
