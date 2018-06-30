@@ -87,6 +87,9 @@ Use `@EnableToken` to get started
 By default, the JVM memory-based token management is working for Daas-Token, `@Scheduled(cron = "0 0/10 * * * ?")` is triggered every 10 minutes to clean up the expired token & login attempts. 
 So please enable the spring schedule feature if you does not change the default configuration.Otherwise , **out of memory** should be a big problem. 
 
+> We recommend to use Redis to replace the default memory-based store to manage the token and login attempts.
+
+
 ```java
     @Configuration
     @EnableScheduling
@@ -94,10 +97,16 @@ So please enable the spring schedule feature if you does not change the default 
     public class Application {}
 ```
 
-We recommend to use Redis to replace the default memory-based store to manage the token and login attempts.
+The `Daas-Token` is working well with `SpringBootApplication` and please exclude the `SecurityAutoConfiguration`.
 
+```java
+    @SpringBootApplication
+    @EnableAutoConfiguration(exclude = SecurityAutoConfiguration.class)
+    @EnableToken 
+    public class Application {}
+```
 
-Implement the interface `TokenConfigurer` to customize your Daas-Token settings.
+To customize your Daas-Token settings, please implement the interface `TokenConfigurer` .
 
 ```java
 public interface TokenConfigurer {
