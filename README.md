@@ -313,6 +313,8 @@ As mentioned before, the JVM memory based token management is used by default, b
 
 First, enabled the spring data redis feature as follow:
 
+> The `spring-data-redis` makes  `RedisTemplate` easier. Please skip the below source if you are working with `spring-boot` && `spring-data-redis`.
+
 ```java
     @Value("${redis.host}")
     private String redisHost;
@@ -335,7 +337,7 @@ First, enabled the spring data redis feature as follow:
         return result;
     }
 ```
-     
+
 Then create the bean `in.clouthink.daas.security.token.spi.impl.redis.TokenProviderRedisImpl`.Please remember to add `@Primary` annotation with `@Bean`,
 it will take the place of the default implementation
 
@@ -402,6 +404,8 @@ Or replace the default `LoginAttemptProviderMemoryImpl` with Memcached impl.
 ## Mongodb
 
 Mongodb is one of the most popular nosql data store , we support to save the token back to mongodb , here is the configuration
+
+> The `spring-data-mongodb` makes  `MongoTemplate` easier. Please skip the below source if you are working with `spring-boot` && `spring-data-mongodb`.
 
 ```java
     @Value("${mongodb.host}")
