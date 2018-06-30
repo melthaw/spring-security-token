@@ -91,7 +91,7 @@ public class DefaultCaptchaManager implements CaptchaManager, InitializingBean {
         if (captcha == null) {
             throw new CaptchaExpiredException();
         }
-        if (!captcha.getValue().equals(request.getCaptchaResponse())) {
+        if (!captcha.getValue().equalsIgnoreCase(request.getCaptchaResponse())) {
             throw new IncorrectCaptchaException();
         }
     }
